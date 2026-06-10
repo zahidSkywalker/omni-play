@@ -1,0 +1,73 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+/plugins
+!/packages
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+*.tsbuildinfo
+next-env.d.ts
+
+# misc
+.DS_Store
+*.pem
+.env*.local
+.env
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# non-app files (skills, cron outputs, etc.)
+skills/
+scripts/
+memory/
+recall-index.md
+worklog.md
+models/
+db/
+credentials.env
+AGENTS.md
+CLAUDE.md
+self-improving/
+deploy-jarvis/
+agent-ctx/
+backups/
+outputs/
+*.py
+*.pyc
+__pycache__/
+*.wav
+*.tgz
+
+# old submodules
+telegram-bot/
+ai-engineering-from-scratch/
+discord-ai-bot/
+learn-tech-site/
+
+# project files
+upload/
+download/
+dev.log
+--timeout

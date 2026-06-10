@@ -1,0 +1,1384 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+@custom-variant light (&:is(.light *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-outfit);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-outfit);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* ============================================
+   OMNI PLAY LIGHT THEME (default)
+   ============================================ */
+:root {
+  --omni-bg: #f0f2f5;
+  --omni-surface: #ffffff;
+  --omni-surface-hover: #f5f7fa;
+  --omni-primary: #6C84E8;
+  --omni-primary-light: #E8EDFF;
+  --omni-secondary: #8B6CC4;
+  --omni-accent: #3090A8;
+  --omni-text: #1a1a2e;
+  --omni-text-secondary: #6b7280;
+  --omni-text-muted: #9ca3af;
+  --omni-border: rgba(0,0,0,0.06);
+  --omni-shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
+  --omni-shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+  --omni-shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
+  --omni-radius: 14px;
+
+  --background: #f0f2f5;
+  --foreground: #1a1a2e;
+  --card: #ffffff;
+  --card-foreground: #1a1a2e;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a2e;
+  --primary: #6C84E8;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #2D2D44;
+  --muted: #f1f5f9;
+  --muted-foreground: #6b7280;
+  --accent: #3090A8;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --border: rgba(0, 0, 0, 0.06);
+  --input: rgba(0, 0, 0, 0.08);
+  --ring: #6C84E8;
+  --chart-1: #6C84E8;
+  --chart-2: #3090A8;
+  --chart-3: #8B6CC4;
+  --chart-4: #4CAF50;
+  --chart-5: #f59e0b;
+  --radius: 0.75rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1a1a2e;
+  --sidebar-primary: #6C84E8;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #E8EDFF;
+  --sidebar-accent-foreground: #2D2D44;
+  --sidebar-border: rgba(0, 0, 0, 0.06);
+  --sidebar-ring: #6C84E8;
+}
+
+/* ============================================
+   DARK THEME (override fallback)
+   ============================================ */
+.dark {
+  --background: #0a0a0a;
+  --foreground: #f5f5f5;
+  --card: #1a1a2e;
+  --card-foreground: #f5f5f5;
+  --popover: #1a1a2e;
+  --popover-foreground: #f5f5f5;
+  --primary: #6C84E8;
+  --primary-foreground: #0a0a0a;
+  --secondary: #1e293b;
+  --secondary-foreground: #f5f5f5;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --accent: #3090A8;
+  --accent-foreground: #f5f5f5;
+  --destructive: #ef4444;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.12);
+  --ring: #6C84E8;
+  --chart-1: #6C84E8;
+  --chart-2: #3090A8;
+  --chart-3: #8B6CC4;
+  --chart-4: #4CAF50;
+  --chart-5: #f59e0b;
+  --radius: 0.75rem;
+  --sidebar: #1a1a2e;
+  --sidebar-foreground: #f5f5f5;
+  --sidebar-primary: #6C84E8;
+  --sidebar-primary-foreground: #0a0a0a;
+  --sidebar-accent: #1e293b;
+  --sidebar-accent-foreground: #f5f5f5;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: #6C84E8;
+}
+
+/* ============================================
+   LIGHT THEME (explicit class)
+   ============================================ */
+.light {
+  --background: #f0f2f5;
+  --foreground: #1a1a2e;
+  --card: #ffffff;
+  --card-foreground: #1a1a2e;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a2e;
+  --primary: #6C84E8;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #2D2D44;
+  --muted: #f1f5f9;
+  --muted-foreground: #6b7280;
+  --accent: #3090A8;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --border: rgba(0, 0, 0, 0.06);
+  --input: rgba(0, 0, 0, 0.08);
+  --ring: #6C84E8;
+  --chart-1: #6C84E8;
+  --chart-2: #3090A8;
+  --chart-3: #8B6CC4;
+  --chart-4: #4CAF50;
+  --chart-5: #f59e0b;
+  --radius: 0.75rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1a1a2e;
+  --sidebar-primary: #6C84E8;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #E8EDFF;
+  --sidebar-accent-foreground: #2D2D44;
+  --sidebar-border: rgba(0, 0, 0, 0.06);
+  --sidebar-ring: #6C84E8;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/* ============================================
+   PREFERS-REDUCED-MOTION — Accessibility
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================
+   SMOOTH THEME TRANSITIONS
+   ============================================ */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+/* ============================================
+   CUSTOM SCROLLBAR — Light (default)
+   ============================================ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.18);
+}
+
+/* ============================================
+   CUSTOM SCROLLBAR — Dark
+   ============================================ */
+.dark ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.dark ::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* ============================================
+   GRADIENT TEXT UTILITY
+   ============================================ */
+.gradient-text {
+  background: linear-gradient(135deg, #6C84E8 0%, #8B6CC4 50%, #3090A8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ============================================
+   EMERALD GLOW EFFECTS (kept for compatibility)
+   ============================================ */
+.emerald-glow {
+  box-shadow: 0 0 20px rgba(108, 132, 232, 0.1),
+              0 0 60px rgba(108, 132, 232, 0.04),
+              0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.dark .emerald-glow {
+  box-shadow: 0 0 20px rgba(108, 132, 232, 0.15),
+              0 0 60px rgba(108, 132, 232, 0.05),
+              0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.emerald-glow-hover {
+  transition: box-shadow 0.3s ease;
+}
+.emerald-glow-hover:hover {
+  box-shadow: 0 0 30px rgba(108, 132, 232, 0.15),
+              0 0 80px rgba(108, 132, 232, 0.06),
+              0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.dark .emerald-glow-hover:hover {
+  box-shadow: 0 0 30px rgba(108, 132, 232, 0.25),
+              0 0 80px rgba(108, 132, 232, 0.1),
+              0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* ============================================
+   GLASS CARD — Clean white cards (light)
+   ============================================ */
+.glass-card {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.dark .glass-card {
+  background: rgba(26, 26, 46, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2),
+              inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.glass-surface {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+
+.dark .glass-surface {
+  background: rgba(26, 26, 46, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* ============================================
+   SHIMMER — Loading animation
+   ============================================ */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.03) 25%,
+    rgba(0, 0, 0, 0.06) 50%,
+    rgba(0, 0, 0, 0.03) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.dark .shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.03) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* ============================================
+   GRID PATTERN BACKGROUND
+   ============================================ */
+.grid-pattern {
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+.dark .grid-pattern {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+/* ============================================
+   TIMER PULSE ANIMATION
+   ============================================ */
+@keyframes timer-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.timer-warning {
+  animation: timer-pulse 1s ease-in-out infinite;
+}
+
+/* ============================================
+   CSS-ONLY ANIMATIONS (replacing framer-motion)
+   ============================================ */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  opacity: 0;
+  animation: fade-in-up 0.6s ease-out forwards;
+}
+
+.animate-fade-in {
+  opacity: 0;
+  animation: fade-in 0.4s ease-out forwards;
+}
+
+.animate-fade-in-down {
+  opacity: 0;
+  animation: fade-in-down 0.3s ease-out forwards;
+}
+
+/* ============================================
+   QUESTION TRANSITION (replacing framer-motion)
+   ============================================ */
+@keyframes question-enter-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes question-enter-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.question-enter-right {
+  animation: question-enter-from-right 0.2s ease-out forwards;
+}
+
+.question-enter-left {
+  animation: question-enter-from-left 0.2s ease-out forwards;
+}
+
+/* ============================================
+   TAB TRANSITION (replacing framer-motion)
+   ============================================ */
+@keyframes tab-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tab-enter {
+  animation: tab-enter 0.2s ease-out forwards;
+}
+
+/* ============================================
+   SHINE / SHIMMER HOVER EFFECT for buttons/cards
+   ============================================ */
+@keyframes shine-sweep {
+  0% {
+    transform: translateX(-100%) skewX(-15deg);
+  }
+  100% {
+    transform: translateX(200%) skewX(-15deg);
+  }
+}
+
+.shine-effect {
+  position: relative;
+  overflow: hidden;
+}
+.shine-effect::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 45%,
+    rgba(255, 255, 255, 0.4) 55%,
+    transparent 100%
+  );
+  transform: translateX(-100%) skewX(-15deg);
+  transition: none;
+}
+.shine-effect:hover::after {
+  animation: shine-sweep 0.6s ease-out;
+}
+
+/* ============================================
+   SCROLL INDICATOR — Animated chevron
+   ============================================ */
+@keyframes bounce-down {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50% { transform: translateY(8px); opacity: 1; }
+}
+
+.scroll-indicator {
+  animation: bounce-down 2s ease-in-out infinite;
+}
+
+/* ============================================
+   SCORE RING ANIMATION for result page
+   ============================================ */
+.score-ring {
+  transition: stroke-dashoffset 1.5s ease-out 0.3s;
+}
+
+/* ============================================
+   SCORE BAR ANIMATION for result page
+   ============================================ */
+@keyframes bar-grow {
+  from {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  to {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}
+
+.score-bar-fill {
+  animation: bar-grow 0.8s ease-out forwards;
+  animation-delay: 0.5s;
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+/* ============================================
+   FOCUS VISIBLE — Global ring for interactive elements
+   ============================================ */
+.focus-ring {
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+  }
+}
+
+/* ============================================
+   PAGE TRANSITION — Fade in for route changes
+   ============================================ */
+.page-transition {
+  animation: fade-in-up 0.4s ease-out forwards;
+}
+
+/* ============================================
+   BOTTOM SHEET (mobile question nav)
+   ============================================ */
+@keyframes slide-up-sheet {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-down-sheet {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+.bottom-sheet-enter {
+  animation: slide-up-sheet 0.3s ease-out forwards;
+}
+
+.bottom-sheet-exit {
+  animation: slide-down-sheet 0.2s ease-in forwards;
+}
+
+/* ============================================
+   HOVER MICRO-ANIMATIONS
+   ============================================ */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+.hover-scale {
+  transition: transform 0.2s ease;
+}
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+/* ============================================
+   SECTION DIVIDER — Subtle separator
+   ============================================ */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(108, 132, 232, 0.15), transparent);
+  margin: 0 auto;
+  max-width: 600px;
+}
+
+.dark .section-divider {
+  background: linear-gradient(90deg, transparent, rgba(108, 132, 232, 0.2), transparent);
+}
+
+/* ============================================
+   LIGHT THEME — Overlay adjustments
+   ============================================ */
+[data-radix-overlay] {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================
+   PULSE BORDER — Animated border pulse
+   ============================================ */
+.pulse-border {
+  animation: pulse-border 2s ease-in-out infinite;
+}
+@keyframes pulse-border {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ============================================
+   RADIAL GLOW — Decorative background glow
+   ============================================ */
+.radial-glow-emerald {
+  background: radial-gradient(ellipse 600px 400px at 50% 60%, rgba(108, 132, 232, 0.06) 0%, transparent 70%);
+}
+
+.dark .radial-glow-emerald {
+  background: radial-gradient(ellipse 600px 400px at 50% 60%, rgba(108, 132, 232, 0.1) 0%, transparent 70%);
+}
+
+.radial-glow-amber {
+  background: radial-gradient(ellipse 600px 300px at 50% 50%, rgba(245, 158, 11, 0.04) 0%, transparent 70%);
+}
+
+.dark .radial-glow-amber {
+  background: radial-gradient(ellipse 600px 300px at 50% 50%, rgba(245, 158, 11, 0.08) 0%, transparent 70%);
+}
+
+.radial-glow-cyan {
+  background: radial-gradient(ellipse 600px 300px at 50% 50%, rgba(48, 144, 168, 0.04) 0%, transparent 70%);
+}
+
+.dark .radial-glow-cyan {
+  background: radial-gradient(ellipse 600px 300px at 50% 50%, rgba(48, 144, 168, 0.08) 0%, transparent 70%);
+}
+
+/* ============================================
+   DOT GRID PATTERN — Lightweight background
+   ============================================ */
+.dot-grid-pattern {
+  background-image: radial-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.dark .dot-grid-pattern {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* ============================================
+   GRADIENT BORDER BUTTON — Wrapper technique
+   ============================================ */
+.btn-gradient-border {
+  position: relative;
+  background: linear-gradient(135deg, #6C84E8, #8B6CC4, #3090A8);
+  border-radius: 0.75rem;
+  padding: 2px;
+}
+.btn-gradient-border > a,
+.btn-gradient-border > button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: calc(0.75rem - 2px);
+  background: inherit;
+}
+
+/* ============================================
+   CARD HOVER GRADIENT BG — Subtle shift on hover
+   ============================================ */
+.card-hover-gradient {
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+.card-hover-gradient:hover {
+  background-color: rgba(108, 132, 232, 0.02);
+}
+
+.dark .card-hover-gradient:hover {
+  background-color: rgba(108, 132, 232, 0.03);
+}
+
+/* ============================================
+   BUTTON GLOW — Subtle glow on hover
+   ============================================ */
+.btn-glow:hover {
+  box-shadow: 0 0 20px rgba(108, 132, 232, 0.15), 0 0 40px rgba(108, 132, 232, 0.05);
+}
+
+.dark .btn-glow:hover {
+  box-shadow: 0 0 20px rgba(108, 132, 232, 0.2), 0 0 40px rgba(108, 132, 232, 0.08);
+}
+
+/* ============================================
+   STEP BADGE HOVER SCALE
+   ============================================ */
+.step-badge-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.step-badge-hover:hover {
+  transform: scale(1.15);
+}
+
+/* ============================================
+   PAGE HEADER GRADIENT STRIP
+   ============================================ */
+.page-header-gradient {
+  background: linear-gradient(180deg, rgba(108, 132, 232, 0.03) 0%, transparent 100%);
+}
+
+.dark .page-header-gradient {
+  background: linear-gradient(180deg, rgba(108, 132, 232, 0.04) 0%, transparent 100%);
+}
+
+/* ============================================
+   PROSE CUSTOM — Article typography styles
+   ============================================ */
+.prose-custom {
+  line-height: 1.8;
+  letter-spacing: 0.01em;
+}
+.prose-custom p {
+  margin-bottom: 1rem;
+}
+.prose-custom ul,
+.prose-custom ol {
+  margin-bottom: 1rem;
+}
+.prose-custom h2 {
+  font-weight: 700;
+}
+.prose-custom h3 {
+  font-weight: 600;
+}
+.prose-custom blockquote {
+  font-style: italic;
+  opacity: 0.9;
+}
+.prose-custom code {
+  font-size: 0.875em;
+}
+.prose-custom a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prose-custom hr {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.08), transparent);
+}
+.dark .prose-custom hr {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+}
+
+/* ============================================
+   SECURITY — Anti-selection for protected content
+   ============================================ */
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.no-copy {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* ============================================
+   SVG DECORATION ANIMATIONS
+   ============================================ */
+
+/* SVG circle stroke draw — used by FloatingShapes pulse circle */
+@keyframes draw-stroke {
+  0% {
+    stroke-dashoffset: 251;
+  }
+  50% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -251;
+  }
+}
+
+/* Floating dot — gentle up/down bob */
+@keyframes float-dot {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-10px);
+    opacity: 1;
+  }
+}
+
+/* Traveling glow dot — moves along a line from left to right */
+@keyframes travel-dot {
+  0% {
+    cx: 0;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    cx: 400;
+    opacity: 0;
+  }
+}
+
+/* SVG line draw — stroke-dasharray animation for decorative lines */
+@keyframes draw-line {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Gentle morph — subtle shape morphing for blob backgrounds */
+@keyframes gentle-morph {
+  0%, 100% {
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+  }
+  25% {
+    border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+  }
+  50% {
+    border-radius: 50% 60% 30% 70% / 40% 50% 60% 50%;
+  }
+  75% {
+    border-radius: 40% 30% 60% 50% / 60% 40% 50% 70%;
+  }
+}
+
+/* Elegant underline draw — for heading underlines */
+@keyframes underline-draw {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.animated-underline {
+  position: relative;
+  display: inline-block;
+}
+.animated-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #6C84E8, #8B6CC4, #3090A8);
+  border-radius: 1px;
+  width: 0;
+  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.animated-underline.revealed::after {
+  width: 100%;
+}
+
+/* Gradient text shift — slowly shifts the gradient across text */
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.gradient-text-animated {
+  background: linear-gradient(270deg, #6C84E8, #8B6CC4, #3090A8, #6C84E8);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradient-shift 6s ease-in-out infinite;
+}
+
+/* ============================================
+   OMNI PLAY — Custom scrollbar for sidebar
+   ============================================ */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.08) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+/* ============================================
+   OMNI PLAY — Video player aspect ratio fix
+   ============================================ */
+.video-container {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+}
+
+.video-container video,
+.video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ============================================
+   OMNI PLAY — Pulse animation for LIVE indicator
+   ============================================ */
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.live-pulse {
+  animation: live-pulse 2s ease-in-out infinite;
+}
+
+/* ============================================
+   OMNI PLAY — Hide scrollbar on channel list on hover
+   ============================================ */
+.channel-list-container:hover {
+  scrollbar-color: rgba(0, 0, 0, 0.12) transparent;
+}
+
+/* ============================================================
+   OMNI PLAY — PREMIUM LIGHT UI DESIGN SYSTEM
+   ============================================================ */
+
+/* --- Ambient Glow: very subtle blue/purple radial gradients --- */
+.omni-ambient-glow {
+  position: relative;
+}
+.omni-ambient-glow::before,
+.omni-ambient-glow::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 50%;
+}
+.omni-ambient-glow::before {
+  top: -10%;
+  right: -8%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(108, 132, 232, 0.04) 0%, transparent 70%);
+}
+.omni-ambient-glow::after {
+  bottom: -12%;
+  left: -6%;
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(139, 108, 196, 0.03) 0%, transparent 70%);
+}
+
+/* --- White Frosted Glass Panel --- */
+.omni-glass {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.dark .omni-glass {
+  background: rgba(15, 15, 19, 0.65);
+  backdrop-filter: blur(20px) saturate(1.3);
+  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  border: 1px solid rgba(108, 132, 232, 0.08);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* --- White Frosted Glass Background (full sections) --- */
+.omni-glass-bg {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+}
+
+/* --- Channel Card: clean white with subtle shadow --- */
+.omni-card {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.omni-card:hover {
+  background: #f8f9fc;
+  border-color: rgba(108, 132, 232, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+.omni-card-active {
+  background: #E8EDFF;
+  border-color: rgba(108, 132, 232, 0.2);
+  box-shadow: 0 2px 8px rgba(108, 132, 232, 0.08);
+}
+.omni-card-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 20%;
+  bottom: 20%;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: #6C84E8;
+}
+
+/* --- Gradient Text: periwinkle blue → lavender purple --- */
+.omni-gradient-text {
+  background: linear-gradient(135deg, #6C84E8 0%, #8B6CC4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* --- Sidebar Active State: left blue accent bar --- */
+.omni-sidebar-active {
+  position: relative;
+  background: #E8EDFF;
+  color: #6C84E8;
+}
+.omni-sidebar-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 15%;
+  bottom: 15%;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
+  background: #6C84E8;
+}
+
+/* --- Active Bar: blue left accent bar for items --- */
+.omni-active-bar {
+  position: relative;
+}
+.omni-active-bar::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 12%;
+  bottom: 12%;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: #6C84E8;
+}
+
+/* --- LIVE Indicator Pulse (subtle, no heavy ring) --- */
+.omni-pulse {
+  position: relative;
+}
+
+/* --- Clean Pill element --- */
+.omni-pill {
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+/* --- Premium Search Input: white, clean --- */
+.omni-input {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.omni-input:focus {
+  background: #ffffff;
+  border-color: #6C84E8;
+  box-shadow: 0 0 0 3px rgba(108, 132, 232, 0.1);
+  outline: none;
+}
+.omni-input::placeholder {
+  color: #9ca3af;
+}
+
+/* --- Refined Thin Scrollbar for light theme --- */
+.omni-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.08) transparent;
+}
+.omni-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.omni-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.omni-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 4px;
+}
+.omni-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+/* --- Premium Skeleton Shimmer: light gray --- */
+@keyframes omni-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+.omni-shimmer {
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e5e7eb 50%,
+    #f0f0f0 75%
+  );
+  background-size: 200% 100%;
+  animation: omni-shimmer 2s ease-in-out infinite;
+  border-radius: 0.75rem;
+}
+
+/* --- Clean Header Accent Line: subtle blue --- */
+.omni-header-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(108, 132, 232, 0.2) 50%, transparent 100%);
+}
+
+/* --- Pill Active Button (mode toggle) --- */
+.omni-pill-active {
+  background: #6C84E8;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(108, 132, 232, 0.25);
+}
+
+/* --- Sidebar hover slide effect --- */
+.omni-slide-hover {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.omni-slide-hover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  left: -100%;
+  width: 100%;
+  background: #E8EDFF;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.omni-slide-hover:hover::before {
+  left: 0;
+}
+
+/* --- Heart fill animation --- */
+@keyframes omni-heart-pop {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.3);
+  }
+  60% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.omni-heart-pop {
+  animation: omni-heart-pop 0.4s ease-out;
+}
+
+/* --- Clean icon circle --- */
+.omni-icon-circle {
+  background: #E8EDFF;
+  border: 1px solid rgba(108, 132, 232, 0.1);
+}
+
+/* --- Player overlay gradients --- */
+.omni-player-overlay-top {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, transparent 100%);
+}
+.omni-player-overlay-bottom {
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.3) 0%, transparent 100%);
+}
+
+/* ============================================
+   OMNI PLAY — Responsive Design System
+   ============================================ */
+
+/* --- Body scroll lock when sidebar is open (mobile) --- */
+body.sidebar-open {
+  overflow: hidden;
+  touch-action: none;
+}
+
+/* --- Safe area insets for notched devices --- */
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.safe-left {
+  padding-left: env(safe-area-inset-left, 0px);
+}
+.safe-right {
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* --- Touch-friendly tap targets (min 44px) --- */
+@media (pointer: coarse) {
+  .touch-target {
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* --- Responsive sidebar width --- */
+@media (max-width: 639px) {
+  .omni-sidebar {
+    width: 85vw;
+    max-width: 320px;
+  }
+}
+@media (min-width: 640px) and (max-width: 1023px) {
+  .omni-sidebar {
+    width: 280px;
+  }
+}
+@media (min-width: 1024px) {
+  .omni-sidebar {
+    width: 280px;
+    flex-shrink: 0;
+  }
+}
+
+/* --- Landscape phone optimization --- */
+@media (max-height: 500px) and (orientation: landscape) {
+  .omni-landscape-compact {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+  }
+}
+
+/* --- Responsive mini player safe area --- */
+.omni-mini-player {
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* ============================================
+   OMNI PLAY — Globe Animations
+   ============================================ */
+@keyframes omni-globe-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.15; }
+  50% { transform: scale(1.15); opacity: 0.08; }
+}
+
+@keyframes omni-globe-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   OMNI PLAY — Bangladesh card green shimmer
+   ============================================ */
+@keyframes bd-card-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.bd-card-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 106, 78, 0.04) 20%,
+    rgba(0, 106, 78, 0.09) 50%,
+    rgba(0, 106, 78, 0.04) 80%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: bd-card-shimmer 4s ease-in-out infinite;
+}
+
+.dark .bd-card-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 106, 78, 0.06) 20%,
+    rgba(0, 106, 78, 0.14) 50%,
+    rgba(0, 106, 78, 0.06) 80%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: bd-card-shimmer 4s ease-in-out infinite;
+}
