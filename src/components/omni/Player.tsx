@@ -79,10 +79,9 @@ export default function Player({ channel, isFavorite, onToggleFavorite, onClose 
     setError(null);
 
     if (isEffectiveHLS && Hls.isSupported()) {
-      // Build URL list: direct URLs first, then proxied as fallback
+      // Interleave direct + proxy so fallback is immediate per URL
       const directUrls = channel.stream_urls?.length ? channel.stream_urls : [effectiveStreamUrl];
-      const proxiedUrls = directUrls.map((u: string) => proxiedUrl(u));
-      const allStreamUrls = [...directUrls, ...proxiedUrls];
+      const allStreamUrls = directUrls.flatMap((u: string) => [u, proxiedUrl(u)]);
       let currentUrlIndex = 0;
 
       const hls = new Hls({
@@ -101,9 +100,9 @@ export default function Player({ channel, isFavorite, onToggleFavorite, onClose 
         fragLoadingMaxRetry: 3,
         fragLoadingRetryDelay: 800,
         manifestLoadingTimeOut: 8000,
-        manifestLoadingMaxRetry: 2,
+        manifestLoadingMaxRetry: 1,
         levelLoadingTimeOut: 8000,
-        levelLoadingMaxRetry: 2,
+        levelLoadingMaxRetry: 1,
       });
       hlsRef.current = hls;
 
@@ -138,37 +137,22 @@ export default function Player({ channel, isFavorite, onToggleFavorite, onClose 
 
       hls.on(Hls.Events.ERROR, (_event, data) => {
         if (data.fatal) {
-          switch (data.type) {
-            case Hls.ErrorTypes.NETWORK_ERROR:
-              if (isYouTubeHLS && !ytFallbackTriggered.current) {
-                ytFallbackTriggered.current = true;
-                hls.destroy();
-                hlsRef.current = null;
-                setYtHlsUrl(null);
-              } else if (currentUrlIndex < allStreamUrls.length - 1) {
-                // Try next stream URL
-                currentUrlIndex++;
-                hls.loadSource(allStreamUrls[currentUrlIndex]);
-              } else {
-                setError('Network error — stream may be geo-blocked or offline');
-                hls.startLoad();
-              }
-              break;
-            case Hls.ErrorTypes.MEDIA_ERROR:
-              setError('Media error — trying to recover');
-              hls.recoverMediaError();
-              break;
-            default:
-              if (isYouTubeHLS && !ytFallbackTriggered.current) {
-                ytFallbackTriggered.current = true;
-                hls.destroy();
-                hlsRef.current = null;
-                setYtHlsUrl(null);
-              } else {
-                setError('Stream playback error — try opening externally');
-                hls.destroy();
-              }
-              break;
+          // YouTube HLS fallback
+          if (isYouTubeHLS && !ytFallbackTriggered.current) {
+            ytFallbackTriggered.current = true;
+            hls.destroy();
+            hlsRef.current = null;
+            setYtHlsUrl(null);
+            return;
+          }
+          // Try next URL for ANY fatal error (network, media, parse, etc.)
+          if (currentUrlIndex < allStreamUrls.length - 1) {
+            currentUrlIndex++;
+            hls.loadSource(allStreamUrls[currentUrlIndex]);
+          } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+            hls.recoverMediaError();
+          } else {
+            setError('Stream unavailable — may be offline or geo-blocked');
           }
         }
       });
