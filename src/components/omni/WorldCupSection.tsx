@@ -251,6 +251,8 @@ const FOOTBALL_COMPS = [
     channels: [
       /* ── Mexico 🇲🇽 ── */
       { name: 'Las Estrellas', country: 'mx', terms: ['las estrellas'] },
+      /* ── Turkey 🇹🇷 ── */
+      { name: 'beIN SPORTS', country: 'tr', terms: ['bein sport'] },
       /* ── Bangladesh 🇧🇩 ── */
       { name: 'Somoy TV', country: 'bd', terms: ['somoy tv'] },
       { name: 'FIFA WC Live', country: 'us', terms: [], url: 'https://www.youtube.com/live/74pv9qGIh1g' },
