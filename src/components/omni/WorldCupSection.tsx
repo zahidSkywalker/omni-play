@@ -812,6 +812,77 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
           </div>
         </div>
 
+        {/* GROUP STAGE FIXTURES */}
+        <div className="px-3 sm:px-4 pt-5 sm:pt-6">
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65 }}
+            className="flex items-center gap-2 mb-3">
+            <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#E8A317]" />
+            <h2 className="text-xs sm:text-sm font-bold text-[#1a1a2e]">Group Stage Fixtures</h2>
+            <span className="text-[9px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-full ml-auto" style={{ background: 'rgba(232,163,23,0.1)', color: '#E8A317' }}>72 Matches</span>
+          </motion.div>
+          <div className="space-y-3">
+            {['A','B','C','D','E','F','G','H','I','J','K','L'].map((grp, gi) => {
+              const groupFixtures = WORLD_CUP_FIXTURES.filter(f => f.group === grp);
+              if (groupFixtures.length === 0) return null;
+              return (
+                <motion.div key={grp}
+                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 + gi * 0.03 }}
+                  className="rounded-xl sm:rounded-2xl overflow-hidden"
+                  style={{ background: '#ffffff', border: '1px solid rgba(0,0,0,0.04)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                  <div className="flex items-center gap-2 px-3 py-2" style={{ background: 'linear-gradient(135deg, #0d2137 0%, #161b22 100%)' }}>
+                    <span className="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded" style={{ background: 'rgba(232,163,23,0.2)', color: '#E8A317' }}>Group {grp}</span>
+                    <div className="flex-1" />
+                    <div className="flex gap-1.5">
+                      {Array.from(new Set(groupFixtures.flatMap(f => [f.home, f.away]))).slice(0, 4).map((team) => {
+                        const fix = groupFixtures.find(f => f.home === team || f.away === team);
+                        const code = fix ? (fix.home === team ? fix.homeCode : fix.awayCode) : 'xx';
+                        return <span key={team} className="text-sm" title={team}>{countryCodeToFlag(code)}</span>;
+                      })}
+                    </div>
+                  </div>
+                  <div className="divide-y" style={{ borderColor: 'rgba(0,0,0,0.04)' }}>
+                    {groupFixtures.map((fix) => {
+                      const koDate = new Date(fix.kickoff);
+                      const isLive = now >= koDate.getTime() && now < koDate.getTime() + 105 * 60 * 1000;
+                      const isPast = now >= koDate.getTime() + 105 * 60 * 1000;
+                      const kickoffStr = koDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'UTC' });
+                      const dateStr = koDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+                      return (
+                        <div key={fix.id} className="flex items-center gap-2 px-3 py-2">
+                          <span className="text-[8px] sm:text-[9px] text-[#9ca3af] font-medium w-12 flex-shrink-0">{dateStr}</span>
+                          <div className="flex-1 flex items-center gap-1.5 min-w-0">
+                            <span className="text-xs sm:text-sm">{countryCodeToFlag(fix.homeCode)}</span>
+                            <span className="text-[9px] sm:text-[10px] font-semibold text-[#1a1a2e] truncate">{fix.home}</span>
+                          </div>
+                          <div className="flex-shrink-0 flex flex-col items-center px-1.5">
+                            {isLive ? (
+                              <div className="flex items-center gap-1">
+                                <span className="relative flex h-1.5 w-1.5">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" style={{ animationDuration: '1.2s' }} />
+                                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500" />
+                                </span>
+                                <span className="text-[8px] font-bold text-red-500">LIVE</span>
+                              </div>
+                            ) : isPast ? (
+                              <span className="text-[8px] font-bold text-[#9ca3af]">FT</span>
+                            ) : (
+                              <span className="text-[8px] font-bold" style={{ color: '#6C84E8' }}>{kickoffStr}</span>
+                            )}
+                          </div>
+                          <div className="flex-1 flex items-center gap-1.5 min-w-0 justify-end">
+                            <span className="text-[9px] sm:text-[10px] font-semibold text-[#1a1a2e] truncate">{fix.away}</span>
+                            <span className="text-xs sm:text-sm">{countryCodeToFlag(fix.awayCode)}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* TOP TEAMS */}
         <div className="px-3 sm:px-4 pt-5 sm:pt-6">
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}
