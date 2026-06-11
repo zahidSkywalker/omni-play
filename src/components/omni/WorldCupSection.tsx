@@ -249,6 +249,8 @@ const FOOTBALL_COMPS = [
     name: 'FIFA World Cup 2026', icon: '🏆',
     gradient: 'linear-gradient(135deg, #0d3320 0%, #1a6b3c 100%)', accent: '#1a6b3c',
     channels: [
+      /* ── Mexico 🇲🇽 ── */
+      { name: 'Las Estrellas', country: 'mx', terms: ['las estrellas'] },
       /* ── Bangladesh 🇧🇩 ── */
       { name: 'Somoy TV', country: 'bd', terms: ['somoy tv'] },
       { name: 'FIFA WC Live', country: 'us', terms: [], url: 'https://www.youtube.com/live/74pv9qGIh1g' },
@@ -458,6 +460,7 @@ function WorldCupSection({ mode, onChannelSelect, onClose }: WorldCupSectionProp
   const [now, setNow] = useState(Date.now());
   const [sportsChannels, setSportsChannels] = useState<Channel[]>([]);
   const [bdChannels, setBdChannels] = useState<Channel[]>([]);
+  const [mxChannels, setMxChannels] = useState<Channel[]>([]);
   const [loading, setLoading] = useState(false);
   const [featuredChannels, setFeaturedChannels] = useState<Channel[]>([]);
   const [activeHostTab, setActiveHostTab] = useState(0);
@@ -539,9 +542,10 @@ function WorldCupSection({ mode, onChannelSelect, onClose }: WorldCupSectionProp
     async function fetchSports() {
       setLoading(true);
       try {
-        const [sportsRes, bdRes] = await Promise.all([
+        const [sportsRes, bdRes, mxRes] = await Promise.all([
           fetch('/api/famelack?type=tv&view=category&id=sports'),
           fetch('/api/famelack?type=tv&view=country&id=bd'),
+          fetch('/api/famelack?type=tv&view=country&id=mx'),
         ]);
         if (sportsRes.ok && !cancelled) {
           const data = await sportsRes.json();
@@ -562,6 +566,10 @@ function WorldCupSection({ mode, onChannelSelect, onClose }: WorldCupSectionProp
         if (bdRes.ok && !cancelled) {
           const bdData = await bdRes.json();
           setBdChannels(Array.isArray(bdData) ? bdData : []);
+        }
+        if (mxRes.ok && !cancelled) {
+          const mxData = await mxRes.json();
+          setMxChannels(Array.isArray(mxData) ? mxData : []);
         }
       } catch { /* empty */ } finally {
         if (!cancelled) setLoading(false);
@@ -597,13 +605,13 @@ function WorldCupSection({ mode, onChannelSelect, onClose }: WorldCupSectionProp
   const totalChannels = useMemo(() => sportsChannels.length, [sportsChannels]);
 
   const getMatchedChannel = useCallback((terms: string[]): Channel | null => {
-    const allChannels = [...sportsChannels, ...bdChannels];
+    const allChannels = [...sportsChannels, ...bdChannels, ...mxChannels];
     for (const term of terms) {
       const m = allChannels.find(c => c.name.toLowerCase().includes(term));
       if (m) return m;
     }
     return null;
-  }, [sportsChannels, bdChannels]);
+  }, [sportsChannels, bdChannels, mxChannels]);
 
   /* Competition-aware channel finder for ticker matches */
   const getChannelForComp = useCallback((comp: string): Channel | null => {
