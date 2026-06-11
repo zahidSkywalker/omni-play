@@ -1,0 +1,899 @@
+     1→'use client';
+     2→
+     3→import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+     4→import { motion, AnimatePresence } from 'framer-motion';
+     5→import {
+     6→  Trophy, MapPin, Calendar, Tv, Radio, ChevronRight, Zap, Star, Users, Globe,
+     7→  Flame, Clock, Landmark, Crown, Target, Sparkles, Play, Signal, Search,
+     8→} from 'lucide-react';
+     9→import { type Channel, type Mode, countryCodeToFlag, LANGUAGE_NAMES } from '@/lib/famelack-types';
+    10→
+    11→interface WorldCupSectionProps {
+    12→  mode: Mode;
+    13→  onChannelSelect: (channel: Channel) => void;
+    14→  onClose: () => void;
+    15→}
+    16→
+    17→const SPORTS_CHANNEL_KEYWORDS = [
+    18→  'sports', 'sport', 'esport', 'fox sport', 'espn', 'bbc sport',
+    19→  'sky sport', 'bein', 'canal+', 'sport tv', 'super sport',
+    20→  'eurosport', 'nbc sport', 'tnt sport', 'dsport', 'star sport',
+    21→  'sported', 'arena sport', 'sportklub', 'dazn',
+    22→];
+    23→
+    24→const HOST_COUNTRIES = [
+    25→  { code: 'us', name: 'United States', cities: 11, venues: ['MetLife Stadium', 'SoFi Stadium', 'AT&T Stadium', 'Mercedes-Benz Stadium', 'NRG Stadium', 'Lumen Field', "Levi's Stadium", 'Hard Rock Stadium', 'Lincoln Financial Field', 'Gillette Stadium', 'Arrowhead Stadium'] },
+    26→  { code: 'mx', name: 'Mexico', cities: 3, venues: ['Estadio Azteca', 'Estadio Akron', 'Estadio BBVA'] },
+    27→  { code: 'ca', name: 'Canada', cities: 2, venues: ['BMO Field', 'BC Place'] },
+    28→];
+    29→
+    30→const TOURNAMENT_START = new Date('2026-06-11T00:00:00Z');
+    31→
+    32→const SCHEDULE_PHASES = [
+    33→  { phase: 'Group Stage', dates: 'Jun 11 \u2013 Jun 27', matches: 80, desc: '16 groups of 3 teams. Top 2 advance to knockout.' },
+    34→  { phase: 'Round of 32', dates: 'Jun 30 \u2013 Jul 3', matches: 16, desc: 'Single-elimination knockout begins.' },
+    35→  { phase: 'Round of 16', dates: 'Jul 4 \u2013 Jul 7', matches: 8, desc: 'Win or go home \u2014 no second chances.' },
+    36→  { phase: 'Quarter-Finals', dates: 'Jul 10 \u2013 Jul 12', matches: 4, desc: 'The final eight battle for a semifinal spot.' },
+    37→  { phase: 'Semi-Finals', dates: 'Jul 14 \u2013 Jul 15', matches: 2, desc: 'Two matches that define the tournament.' },
+    38→  { phase: 'Third-Place', date: 'Jul 18', matches: 1, desc: 'Bronze medal match in Atlanta.' },
+    39→  { phase: 'Final', date: 'Jul 19', matches: 1, desc: 'The biggest match in football \u2014 MetLife Stadium, New Jersey.' },
+    40→];
+    41→
+    42→const TOP_PLAYERS = [
+    43→  { name: 'Kylian Mbappe', country: 'fr', team: 'France', position: 'Forward', flag: '\u{1F1EB}\u{1F1F7}', rating: 97 },
+    44→  { name: 'Erling Haaland', country: 'no', team: 'Norway', position: 'Striker', flag: '\u{1F1F3}\u{1F1F4}', rating: 96 },
+    45→  { name: 'Vinicius Jr', country: 'br', team: 'Brazil', position: 'Winger', flag: '\u{1F1E7}\u{1F1F7}', rating: 95 },
+    46→  { name: 'Jude Bellingham', country: 'gb', team: 'England', position: 'Midfielder', flag: '\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}', rating: 94 },
+    47→  { name: 'Rodri', country: 'es', team: 'Spain', position: 'Midfielder', flag: '\u{1F1EA}\u{1F1F8}', rating: 93 },
+    48→  { name: 'Florian Wirtz', country: 'de', team: 'Germany', position: 'Midfielder', flag: '\u{1F1E9}\u{1F1EA}', rating: 92 },
+    49→];
+    50→
+    51→const TOP_TEAMS = [
+    52→  { name: 'Argentina', code: 'ar', ranking: 1, trophies: 3, flag: countryCodeToFlag('ar'), recent: '2022 World Cup Winners' },
+    53→  { name: 'France', code: 'fr', ranking: 2, trophies: 2, flag: countryCodeToFlag('fr'), recent: '2022 Runners-up' },
+    54→  { name: 'England', code: 'gb', ranking: 3, trophies: 1, flag: countryCodeToFlag('gb'), recent: 'Euro 2024 Runners-up' },
+    55→  { name: 'Brazil', code: 'br', ranking: 4, trophies: 5, flag: countryCodeToFlag('br'), recent: 'Copa America 2024 QF' },
+    56→  { name: 'Spain', code: 'es', ranking: 5, trophies: 1, flag: countryCodeToFlag('es'), recent: 'Euro 2024 Winners' },
+    57→  { name: 'Germany', code: 'de', ranking: 6, trophies: 4, flag: countryCodeToFlag('de'), recent: 'Euro 2024 QF' },
+    58→  { name: 'Portugal', code: 'pt', ranking: 7, trophies: 0, flag: countryCodeToFlag('pt'), recent: 'Euro 2024 QF' },
+    59→  { name: 'Netherlands', code: 'nl', ranking: 8, trophies: 0, flag: countryCodeToFlag('nl'), recent: 'Euro 2024 Semis' },
+    60→];
+    61→
+    62→const CONFEDERATIONS = [
+    63→  { name: 'UEFA (Europe)', teams: 16, color: '#3498db' },
+    64→  { name: 'CAF (Africa)', teams: 9, color: '#e67e22' },
+    65→  { name: 'CONMEBOL (S. America)', teams: 6, color: '#27ae60' },
+    66→  { name: 'CONCACAF (N. America)', teams: 6, color: '#e74c3c' },
+    67→  { name: 'AFC (Asia)', teams: 8, color: '#f1c40f' },
+    68→  { name: 'OFC (Oceania)', teams: 1, color: '#9b59b6' },
+    69→  { name: 'Hosts', teams: 3, color: '#1abc9c' },
+    70→];
+    71→
+    72→/* #2: FOOTBALL CHANNELS — verified real broadcasters (famelack API + YouTube live).
+    73→    Only channels confirmed to exist in the famelack sports category or direct YouTube links.
+    74→    Organized by country within each competition. TV channels first, YouTube last. */
+    75→const FOOTBALL_COMPS = [
+    76→  {
+    77→    name: 'FIFA World Cup 2026', icon: '🏆',
+    78→    gradient: 'linear-gradient(135deg, #0d3320 0%, #1a6b3c 100%)', accent: '#1a6b3c',
+    79→    channels: [
+    80→      /* ── Bangladesh 🇧🇩 ── */
+    81→      { name: 'T Sports', country: 'bd', terms: ['t sport'] },
+    82→      { name: 'RTA Sport', country: 'af', terms: ['rta sport'] },
+    83→      /* ── India 🇮🇳 ── */
+    84→      { name: 'DD Sports', country: 'in', terms: ['dd sport'] },
+    85→      /* ── Middle East ── */
+    86→      { name: 'KTV Sport', country: 'kw', terms: ['ktv sport'] },
+    87→      { name: 'KTV Sport Plus', country: 'kw', terms: ['ktv sport plus'] },
+    88→      { name: 'Bahrain Sports 1', country: 'bh', terms: ['bahrain sport'] },
+    89→      { name: 'Bahrain Sports 2', country: 'bh', terms: ['bahrain sport'] },
+    90→      { name: 'Jordan Sport', country: 'jo', terms: ['jordan sport'] },
+    91→      { name: 'Oman Sports TV', country: 'om', terms: ['oman sport'] },
+    92→      { name: 'Al Iraqia Sport', country: 'iq', terms: ['iraqia sport'] },
+    93→      /* ── Morocco 🇲🇦 ── */
+    94→      { name: 'Arryadia', country: 'ma', terms: ['arryadia'] },
+    95→      { name: 'Arryadia HD1', country: 'ma', terms: ['arryadia hd1'] },
+    96→      { name: 'Arryadia HD2', country: 'ma', terms: ['arryadia hd2'] },
+    97→      { name: 'Arryadia HD3', country: 'ma', terms: ['arryadia hd3'] },
+    98→      /* ── Europe ── */
+    99→      { name: 'Rai Sport', country: 'it', terms: ['rai sport'] },
+   100→      { name: 'Sportitalia', country: 'it', terms: ['sportitalia'] },
+   101→      { name: 'Sportitalia Solocalcio', country: 'it', terms: ['solocalcio'] },
+   102→      { name: 'Real Madrid TV', country: 'es', terms: ['real madrid'] },
+   103→      { name: 'Teledeporte', country: 'es', terms: ['teledeporte'] },
+   104→      { name: 'Esport3', country: 'es', terms: ['esport3'] },
+   105→      { name: 'TR Sport', country: 'it', terms: ['tr sport'] },
+   106→      { name: 'ACI Sport TV', country: 'it', terms: ['aci sport'] },
+   107→      { name: 'Futbol', country: 'tj', terms: ['futbol'] },
+   108→      { name: 'QazSport', country: 'kz', terms: ['qazsport'] },
+   109→      { name: 'TVR Sport', country: 'ro', terms: ['tvr sport'] },
+   110→      { name: 'Suspilne Sport', country: 'ua', terms: ['suspilne sport'] },
+   111→      { name: 'Red Bull TV', country: 'at', terms: ['red bull'] },
+   112→      { name: 'World of Freesports', country: 'de', terms: ['freesport'] },
+   113→      /* ── Americas ── */
+   114→      { name: 'TyC Sports', country: 'ar', terms: ['tyc sport'] },
+   115→      { name: 'CazeTV', country: 'br', terms: ['cazetv'] },
+   116→      { name: 'ITV Deportes', country: 'mx', terms: ['itv deporte'] },
+   117→      { name: 'Ovacion TV', country: 'pe', terms: ['ovacion'] },
+   118→      { name: 'AS3 Sport TV', country: 've', terms: ['as3 sport'] },
+   119→      /* ── USA 🇺🇸 (famelack verified) ── */
+   120→      { name: 'Fox Sports 1', country: 'us', terms: ['fox sport'] },
+   121→      { name: 'Fox Deportes', country: 'us', terms: ['fox deporte'] },
+   122→      { name: 'CBS Sports HQ', country: 'us', terms: ['cbs sport'] },
+   123→      { name: 'CBS Sports Golazo', country: 'us', terms: ['golazo'] },
+   124→      { name: 'NBC Sports NOW', country: 'us', terms: ['nbc sport'] },
+   125→      { name: 'FIFA+ United States', country: 'us', terms: ['fifa+'] },
+   126→      { name: 'Fubo Sports Network', country: 'us', terms: ['fubo sport'] },
+   127→      { name: 'Stadium', country: 'us', terms: ['stadium'] },
+   128→      /* ── Africa ── */
+   129→      { name: 'Sports Connect', country: 'za', terms: ['sport connect'] },
+   130→      { name: 'Africa 24 Sport', country: 'fr', terms: ['africa 24 sport'] },
+   131→      /* ── YouTube Live Football Streams (always available) ── */
+   132→      { name: 'Football Live 1', country: 'us', terms: [], url: 'https://www.youtube.com/live/rE2Bfl9KmOU' },
+   133→      { name: 'Football Live 2', country: 'us', terms: [], url: 'https://www.youtube.com/live/ORzHdV_NVnQ' },
+   134→      { name: 'Football Live 3', country: 'us', terms: [], url: 'https://www.youtube.com/live/ul7Fdnt3BtI' },
+   135→      { name: 'Football Live 4', country: 'us', terms: [], url: 'https://www.youtube.com/live/mieW9xgHoqg' },
+   136→      { name: 'Football Live 5', country: 'us', terms: [], url: 'https://www.youtube.com/live/ntjJKCjNmcE' },
+   137→      { name: 'Football Live 6', country: 'us', terms: [], url: 'https://www.youtube.com/live/Ow4TQOqbId0' },
+   138→      { name: 'Football Live 7', country: 'us', terms: [], url: 'https://www.youtube.com/live/h0rCsHR8mWc' },
+   139→      { name: 'Football Live 8', country: 'us', terms: [], url: 'https://www.youtube.com/live/bZCHTzEg5fo' },
+   140→    ],
+   141→  },
+   142→  {
+   143→    name: 'Premier League', icon: '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+   144→    gradient: 'linear-gradient(135deg, #38003C 0%, #6B2D8E 100%)', accent: '#6B2D8E',
+   145→    channels: [
+   146→      /* ── Bangladesh 🇧🇩 ── */
+   147→      { name: 'T Sports', country: 'bd', terms: ['t sport'] },
+   148→      /* ── Middle East ── */
+   149→      { name: 'KTV Sport', country: 'kw', terms: ['ktv sport'] },
+   150→      { name: 'KTV Sport Plus', country: 'kw', terms: ['ktv sport plus'] },
+   151→      { name: 'Bahrain Sports 1', country: 'bh', terms: ['bahrain sport'] },
+   152→      { name: 'Bahrain Sports 2', country: 'bh', terms: ['bahrain sport'] },
+   153→      { name: 'Oman Sports TV', country: 'om', terms: ['oman sport'] },
+   154→      /* ── USA 🇺🇸 ── */
+   155→      { name: 'Fox Sports 1', country: 'us', terms: ['fox sport'] },
+   156→      { name: 'NBC Sports NOW', country: 'us', terms: ['nbc sport'] },
+   157→      { name: 'CBS Sports HQ', country: 'us', terms: ['cbs sport'] },
+   158→      { name: 'CBS Sports Golazo', country: 'us', terms: ['golazo'] },
+   159→      { name: 'Fubo Sports Network', country: 'us', terms: ['fubo sport'] },
+   160→      /* ── Africa ── */
+   161→      { name: 'Sports Connect', country: 'za', terms: ['sport connect'] },
+   162→      { name: 'Africa 24 Sport', country: 'fr', terms: ['africa 24 sport'] },
+   163→      /* ── YouTube Live Football Streams ── */
+   164→      { name: 'Football Live 1', country: 'us', terms: [], url: 'https://www.youtube.com/live/rE2Bfl9KmOU' },
+   165→      { name: 'Football Live 2', country: 'us', terms: [], url: 'https://www.youtube.com/live/ORzHdV_NVnQ' },
+   166→      { name: 'Football Live 3', country: 'us', terms: [], url: 'https://www.youtube.com/live/ul7Fdnt3BtI' },
+   167→      { name: 'Football Live 4', country: 'us', terms: [], url: 'https://www.youtube.com/live/mieW9xgHoqg' },
+   168→    ],
+   169→  },
+   170→  {
+   171→    name: 'UEFA Champions League', icon: '⭐',
+   172→    gradient: 'linear-gradient(135deg, #0A1628 0%, #14274E 100%)', accent: '#14274E',
+   173→    channels: [
+   174→      /* ── Bangladesh 🇧🇩 ── */
+   175→      { name: 'T Sports', country: 'bd', terms: ['t sport'] },
+   176→      /* ── Middle East ── */
+   177→      { name: 'KTV Sport', country: 'kw', terms: ['ktv sport'] },
+   178→      { name: 'Bahrain Sports 1', country: 'bh', terms: ['bahrain sport'] },
+   179→      { name: 'Jordan Sport', country: 'jo', terms: ['jordan sport'] },
+   180→      /* ── Europe ── */
+   181→      { name: 'Rai Sport', country: 'it', terms: ['rai sport'] },
+   182→      { name: 'Sportitalia', country: 'it', terms: ['sportitalia'] },
+   183→      { name: 'TVR Sport', country: 'ro', terms: ['tvr sport'] },
+   184→      /* ── USA 🇺🇸 ── */
+   185→      { name: 'CBS Sports HQ', country: 'us', terms: ['cbs sport'] },
+   186→      { name: 'CBS Sports Golazo', country: 'us', terms: ['golazo'] },
+   187→      { name: 'Fubo Sports Network', country: 'us', terms: ['fubo sport'] },
+   188→      { name: 'Stadium', country: 'us', terms: ['stadium'] },
+   189→      /* ── Africa ── */
+   190→      { name: 'Sports Connect', country: 'za', terms: ['sport connect'] },
+   191→      { name: 'Africa 24 Sport', country: 'fr', terms: ['africa 24 sport'] },
+   192→      /* ── YouTube Live Football Streams ── */
+   193→      { name: 'Football Live 1', country: 'us', terms: [], url: 'https://www.youtube.com/live/rE2Bfl9KmOU' },
+   194→      { name: 'Football Live 2', country: 'us', terms: [], url: 'https://www.youtube.com/live/ORzHdV_NVnQ' },
+   195→      { name: 'Football Live 5', country: 'us', terms: [], url: 'https://www.youtube.com/live/ntjJKCjNmcE' },
+   196→      { name: 'Football Live 6', country: 'us', terms: [], url: 'https://www.youtube.com/live/Ow4TQOqbId0' },
+   197→    ],
+   198→  },
+   199→  {
+   200→    name: 'La Liga', icon: '🇪🇸',
+   201→    gradient: 'linear-gradient(135deg, #EE8707 0%, #FF4B44 100%)', accent: '#EE8707',
+   202→    channels: [
+   203→      /* ── Spain 🇪🇸 (famelack verified) ── */
+   204→      { name: 'Real Madrid TV', country: 'es', terms: ['real madrid'] },
+   205→      { name: 'Teledeporte', country: 'es', terms: ['teledeporte'] },
+   206→      { name: 'Esport3', country: 'es', terms: ['esport3'] },
+   207→      { name: 'Gol Classics', country: 'es', terms: ['gol classic'] },
+   208→      /* ── Middle East ── */
+   209→      { name: 'KTV Sport', country: 'kw', terms: ['ktv sport'] },
+   210→      { name: 'Bahrain Sports 1', country: 'bh', terms: ['bahrain sport'] },
+   211→      /* ── Americas ── */
+   212→      { name: 'Fox Deportes', country: 'us', terms: ['fox deporte'] },
+   213→      { name: 'CazeTV', country: 'br', terms: ['cazetv'] },
+   214→      { name: 'ITV Deportes', country: 'mx', terms: ['itv deporte'] },
+   215→      /* ── Africa ── */
+   216→      { name: 'Africa 24 Sport', country: 'fr', terms: ['africa 24 sport'] },
+   217→      /* ── YouTube Live Football Streams ── */
+   218→      { name: 'Football Live 3', country: 'us', terms: [], url: 'https://www.youtube.com/live/ul7Fdnt3BtI' },
+   219→      { name: 'Football Live 7', country: 'us', terms: [], url: 'https://www.youtube.com/live/h0rCsHR8mWc' },
+   220→    ],
+   221→  },
+   222→  {
+   223→    name: 'Serie A', icon: '🇮🇹',
+   224→    gradient: 'linear-gradient(135deg, #024494 0%, #009BDB 100%)', accent: '#024494',
+   225→    channels: [
+   226→      /* ── Italy 🇮🇹 (famelack verified) ── */
+   227→      { name: 'Rai Sport', country: 'it', terms: ['rai sport'] },
+   228→      { name: 'Sportitalia', country: 'it', terms: ['sportitalia'] },
+   229→      { name: 'Sportitalia Solocalcio', country: 'it', terms: ['solocalcio'] },
+   230→      { name: 'ACI Sport TV', country: 'it', terms: ['aci sport'] },
+   231→      { name: 'SuperTennis', country: 'it', terms: ['supertennis'] },
+   232→      /* ── USA ── */
+   233→      { name: 'CBS Sports Golazo', country: 'us', terms: ['golazo'] },
+   234→      { name: 'Fubo Sports Network', country: 'us', terms: ['fubo sport'] },
+   235→      /* ── YouTube Live Football Streams ── */
+   236→      { name: 'Football Live 4', country: 'us', terms: [], url: 'https://www.youtube.com/live/mieW9xgHoqg' },
+   237→      { name: 'Football Live 8', country: 'us', terms: [], url: 'https://www.youtube.com/live/bZCHTzEg5fo' },
+   238→    ],
+   239→  },
+   240→  {
+   241→    name: 'Bundesliga', icon: '🇩🇪',
+   242→    gradient: 'linear-gradient(135deg, #D20515 0%, #D20515 100%)', accent: '#D20515',
+   243→    channels: [
+   244→      /* ── Europe ── */
+   245→      { name: 'World of Freesports', country: 'de', terms: ['freesport'] },
+   246→      { name: 'Red Bull TV', country: 'at', terms: ['red bull'] },
+   247→      { name: 'TVR Sport', country: 'ro', terms: ['tvr sport'] },
+   248→      /* ── USA ── */
+   249→      { name: 'Fox Sports 1', country: 'us', terms: ['fox sport'] },
+   250→      { name: 'Fubo Sports Network', country: 'us', terms: ['fubo sport'] },
+   251→      /* ── YouTube Live Football Streams ── */
+   252→      { name: 'Football Live 2', country: 'us', terms: [], url: 'https://www.youtube.com/live/ORzHdV_NVnQ' },
+   253→      { name: 'Football Live 5', country: 'us', terms: [], url: 'https://www.youtube.com/live/ntjJKCjNmcE' },
+   254→    ],
+   255→  },
+   256→];
+   257→
+   258→/* #3: FLOATING PLAYER IMAGE CONFIGS */
+   259→const FLOATING_PLAYERS = Array.from({ length: 14 }, (_, i) => ({
+   260→  src: `/characters/player${i + 1}.jpg`,
+   261→  left: `${3 + (i % 7) * 14}%`,
+   262→  delay: `${i * 1.6}s`,
+   263→  duration: `${18 + (i % 6) * 3}s`,
+   264→  size: 40 + (i % 5) * 10,
+   265→}));
+   266→
+   267→/* #4: LIVE MATCH TICKER DATA — status: 'live' | 'ft' | 'upcoming' */
+   268→const TICKER_MATCHES = [
+   269→  { home: 'Argentina', hf: '\u{1F1E6}\u{1F1F7}', away: 'Portugal', af: '\u{1F1F5}\u{1F1F9}', comp: 'Friendly', status: 'live', min: "67'", score: '2 - 1' },
+   270→  { home: 'Man City', hf: '\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}', away: 'Real Madrid', af: '\u{1F1EA}\u{1F1F8}', comp: 'UCL', status: 'live', min: "34'", score: '1 - 1' },
+   271→  { home: 'Barcelona', hf: '\u{1F1EA}\u{1F1F8}', away: 'Bayern', af: '\u{1F1E9}\u{1F1EA}', comp: 'UCL', status: 'live', min: 'HT', score: '0 - 0' },
+   272→  { home: 'Liverpool', hf: '\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}', away: 'PSG', af: '\u{1F1EB}\u{1F1F7}', comp: 'UCL', status: 'upcoming', min: '20:45', score: 'vs' },
+   273→  { home: 'Brazil', hf: '\u{1F1E7}\u{1F1F7}', away: 'France', af: '\u{1F1EB}\u{1F1F7}', comp: 'WC 2026', status: 'live', min: "55'", score: '1 - 2' },
+   274→  { home: 'Dortmund', hf: '\u{1F1E9}\u{1F1EA}', away: 'Atletico', af: '\u{1F1EA}\u{1F1F8}', comp: 'UCL', status: 'ft', min: 'FT', score: '3 - 2' },
+   275→  { home: 'Arsenal', hf: '\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}', away: 'Inter', af: '\u{1F1EE}\u{1F1F9}', comp: 'UCL', status: 'upcoming', min: '21:00', score: 'vs' },
+   276→];
+   277→
+   278→export default function WorldCupSection({ mode, onChannelSelect, onClose }: WorldCupSectionProps) {
+   279→  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+   280→  const [sportsChannels, setSportsChannels] = useState<Channel[]>([]);
+   281→  const [loading, setLoading] = useState(false);
+   282→  const [featuredChannels, setFeaturedChannels] = useState<Channel[]>([]);
+   283→  const [activeHostTab, setActiveHostTab] = useState(0);
+   284→  const [videoLoaded, setVideoLoaded] = useState(false);
+   285→  const [floatingVisible, setFloatingVisible] = useState(true);
+   286→  const videoRef = useRef<HTMLVideoElement>(null);
+   287→  const tickerContainerRef = useRef<HTMLDivElement>(null);
+   288→
+   289→  /* Countdown */
+   290→  useEffect(() => {
+   291→    function tick() {
+   292→      const dist = TOURNAMENT_START.getTime() - Date.now();
+   293→      if (dist > 0) setCountdown({
+   294→        days: Math.floor(dist / 86400000),
+   295→        hours: Math.floor((dist % 86400000) / 3600000),
+   296→        minutes: Math.floor((dist % 3600000) / 60000),
+   297→        seconds: Math.floor((dist % 60000) / 1000),
+   298→      });
+   299→    }
+   300→    tick();
+   301→    const iv = setInterval(tick, 1000);
+   302→    return () => clearInterval(iv);
+   303→  }, []);
+   304→
+   305→  /* Fetch sports channels */
+   306→  useEffect(() => {
+   307→    if (mode !== 'tv') return;
+   308→    let cancelled = false;
+   309→    async function fetchSports() {
+   310→      setLoading(true);
+   311→      try {
+   312→        const res = await fetch('/api/famelack?type=tv&view=category&id=sports');
+   313→        if (res.ok && !cancelled) {
+   314→          const data = await res.json();
+   315→          const channels: Channel[] = Array.isArray(data) ? data : [];
+   316→          setSportsChannels(channels);
+   317→          const scored = channels.map(ch => {
+   318→            const n = ch.name.toLowerCase();
+   319→            let s = 0;
+   320→            if (SPORTS_CHANNEL_KEYWORDS.some(kw => n.includes(kw))) s += 3;
+   321→            if (n.includes('football') || n.includes('soccer') || n.includes('futbol') || n.includes('futebol')) s += 5;
+   322→            if (n.includes('fox') || n.includes('espn') || n.includes('bbc') || n.includes('sky')) s += 2;
+   323→            if (n.includes('live') || n.includes('hd')) s += 1;
+   324→            return { channel: ch, score: s };
+   325→          });
+   326→          scored.sort((a, b) => b.score - a.score);
+   327→          setFeaturedChannels(scored.slice(0, 12).map(s => s.channel));
+   328→        }
+   329→      } catch { /* empty */ } finally {
+   330→        if (!cancelled) setLoading(false);
+   331→      }
+   332→    }
+   333→    fetchSports();
+   334→    return () => { cancelled = true; };
+   335→  }, [mode]);
+   336→
+   337→  /* Pause floating players when WorldCup section is off-screen */
+   338→  useEffect(() => {
+   339→    const el = tickerContainerRef.current?.parentElement;
+   340→    if (!el) return;
+   341→    const observer = new IntersectionObserver(
+   342→      ([entry]) => { setFloatingVisible(entry.isIntersecting); },
+   343→      { threshold: 0.05 }
+   344→    );
+   345→    observer.observe(el);
+   346→    return () => observer.disconnect();
+   347→  }, []);
+   348→
+   349→  /* Tab visibility — pause all animations when tab hidden */
+   350→  useEffect(() => {
+   351→    const handler = () => {
+   352→      document.documentElement.style.animationPlayState = document.hidden ? 'paused' : 'running';
+   353→    };
+   354→    document.addEventListener('visibilitychange', handler);
+   355→    return () => document.removeEventListener('visibilitychange', handler);
+   356→  }, []);
+   357→
+   358→  /* Ticker uses pure CSS animation — no JS interval needed */
+   359→
+   360→  const totalChannels = useMemo(() => sportsChannels.length, [sportsChannels]);
+   361→
+   362→  const getMatchedChannel = useCallback((terms: string[]): Channel | null => {
+   363→    for (const term of terms) {
+   364→      const m = sportsChannels.find(c => c.name.toLowerCase().includes(term));
+   365→      if (m) return m;
+   366→    }
+   367→    return null;
+   368→  }, [sportsChannels]);
+   369→
+   370→  /* Competition-aware channel finder for ticker matches */
+   371→  const getChannelForComp = useCallback((comp: string): Channel | null => {
+   372→    const compMap: Record<string, string[]> = {
+   373→      'EPL': ['sky sport', 'nbc sport', 'bein sport', 'super sport'],
+   374→      'UCL': ['tnt sport', 'cbs sport', 'bein sport', 'dazn'],
+   375→      'Champions League': ['tnt sport', 'cbs sport', 'bein sport', 'dazn'],
+   376→      'La Liga': ['movistar', 'bein sport', 'espn', 'canal'],
+   377→      'Serie A': ['sky sport', 'dazn', 'bein sport', 'espn'],
+   378→      'Bundesliga': ['sky sport', 'espn', 'dazn', 'bein sport'],
+   379→      'WC 2026': ['fox sport', 'telemundo', 'bbc sport', 'bein sport'],
+   380→      'Friendly': ['sky sport', 'espn', 'bbc sport', 'fox sport'],
+   381→    };
+   382→    const terms = compMap[comp];
+   383→    if (terms) return getMatchedChannel(terms);
+   384→    return getMatchedChannel(['sky sport', 'bein sport', 'espn', 'bbc sport', 'fox sport']);
+   385→  }, [getMatchedChannel]);
+   386→
+   387→  return (
+   388→    <div className="flex-1 overflow-y-auto omni-scrollbar relative">
+   389→
+   390→      {/* #3: FLOATING CHARACTER ANIMATIONS — paused when off-screen */}
+   391→      <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 5, animationPlayState: floatingVisible ? 'running' : 'paused' }}>
+   392→        {FLOATING_PLAYERS.slice(0, 8).map((p, i) => (
+   393→          <div key={i} className="absolute" style={{
+   394→            left: p.left, bottom: '-80px', width: p.size,
+   395→            animation: `omniFloatUp ${p.duration} ${p.delay} linear infinite`,
+   396→          }}>
+   397→            {/* eslint-disable-next-line @next/next/no-img-element */}
+   398→            <img src={p.src} alt="" loading="lazy" decoding="async" className="w-full rounded-xl" style={{
+   399→              filter: 'drop-shadow(0 0 14px rgba(108,132,232,0.45)) brightness(1.05)',
+   400→              animation: `omniFloatFade ${p.duration} ${p.delay} linear infinite`,
+   401→            }} />
+   402→          </div>
+   403→        ))}
+   404→      </div>
+   405→
+   406→      {/* #1: STICKY HERO (video + countdown + #4 ticker) */}
+   407→      <div className="sticky top-0 z-30">
+   408→        {/* Hero Banner */}
+   409→        <div className="relative overflow-hidden" style={{ minHeight: '280px', background: 'linear-gradient(135deg, #0d1117 0%, #161b22 30%, #0d2137 60%, #0d1117 100%)' }}>
+   410→          {/* Video */}
+   411→          <div className="absolute inset-0 overflow-hidden">
+   412→            <video ref={videoRef} autoPlay muted loop playsInline preload="none"
+   413→              onLoadedData={() => setVideoLoaded(true)}
+   414→              className="absolute inset-0 w-full h-full object-cover scale-110"
+   415→              style={{ opacity: videoLoaded ? 0.6 : 0, transition: 'opacity 1.5s ease-in-out', filter: 'saturate(1.2) brightness(0.8)' }}>
+   416→              <source src="/videos/fifa-hero.mp4" type="video/mp4" />
+   417→            </video>
+   418→            <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(8,8,20,0.92) 0%, rgba(8,8,20,0.6) 35%, rgba(8,8,20,0.4) 65%, rgba(8,8,20,0.95) 100%)' }} />
+   419→            <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at center, transparent 35%, rgba(8,8,20,0.75) 100%)' }} />
+   420→            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(232,163,23,0.12) 0%, transparent 70%)' }} />
+   421→          </div>
+   422→
+   423→          {/* Particles */}
+   424→          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+   425→            {Array.from({ length: 4 }).map((_, i) => (
+   426→              <motion.div key={i} className="absolute rounded-full"
+   427→                initial={{ opacity: 0, y: Math.random() * 200 }}
+   428→                animate={{ opacity: [0, 0.35, 0], y: [0, -50 - Math.random() * 40], x: [0, (Math.random() - 0.5) * 25] }}
+   429→                transition={{ duration: 3 + Math.random() * 3, repeat: Infinity, delay: Math.random() * 3, ease: 'easeOut' }}
+   430→                style={{ width: 2 + Math.random() * 2, height: 2 + Math.random() * 2, left: `${10 + Math.random() * 80}%`, bottom: `${Math.random() * 30}%`, background: i % 3 === 0 ? '#E8A317' : i % 3 === 1 ? '#6C84E8' : '#ffffff' }}
+   431→              />
+   432→            ))}
+   433→          </div>
+   434→
+   435→          {/* Countdown content */}
+   436→          <div className="relative px-4 sm:px-6 pt-6 sm:pt-8 pb-6 sm:pb-8 text-center">
+   437→            {/* FIFA 2026 Mascot */}
+   438→            <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', damping: 12, stiffness: 200, delay: 0.1 }}
+   439→              className="flex items-center justify-center mb-3 sm:mb-5">
+   440→              {/* eslint-disable-next-line @next/next/no-img-element */}
+   441→              <img src="/fifa-mascot.png" alt="FIFA 2026 Mascot" className="w-24 h-24 sm:w-32 sm:h-32 drop-shadow-lg object-contain" loading="eager" style={{ filter: 'drop-shadow(0 4px 24px rgba(232,163,23,0.5))' }} />
+   442→            </motion.div>
+   443→            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+   444→              className="text-xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight">
+   445→              FIFA World Cup{' '}
+   446→              <span className="inline-block" style={{ background: 'linear-gradient(135deg, #E8A317, #FFD700, #E8A317)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+   447→                2026
+   448→              </span>
+   449→            </motion.h1>
+   450→            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}
+   451→              className="text-xs sm:text-sm text-white/50 mt-1 sm:mt-1.5 font-medium tracking-wide">
+   452→              United States &middot; Mexico &middot; Canada
+   453→            </motion.p>
+   454→
+   455→            {/* Countdown boxes */}
+   456→            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}
+   457→              className="flex items-center justify-center gap-2 sm:gap-3 mt-4 sm:mt-6">
+   458→              {[
+   459→                { value: countdown.days, label: 'Days' },
+   460→                { value: countdown.hours, label: 'Hrs' },
+   461→                { value: countdown.minutes, label: 'Min' },
+   462→                { value: countdown.seconds, label: 'Sec' },
+   463→              ].map((unit, i) => (
+   464→                <div key={i} className="flex flex-col items-center">
+   465→                  <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center"
+   466→                    style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)' }}>
+   467→                    <span className="text-base sm:text-2xl font-bold text-white tabular-nums">{String(unit.value).padStart(2, '0')}</span>
+   468→                  </div>
+   469→                  <span className="text-[9px] sm:text-[10px] text-white/40 mt-1 uppercase tracking-wider font-medium">{unit.label}</span>
+   470→                </div>
+   471→              ))}
+   472→            </motion.div>
+   473→
+   474→            {/* Stats */}
+   475→            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
+   476→              className="flex items-center justify-center gap-3 sm:gap-5 mt-4 sm:mt-5">
+   477→              {[
+   478→                { icon: <Users className="w-3 h-3 sm:w-3.5 sm:h-3.5" />, text: '48 Teams' },
+   479→                { icon: <Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5" />, text: '104 Matches' },
+   480→                { icon: <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5" />, text: '16 Venues' },
+   481→              ].map((stat, i) => (
+   482→                <div key={i} className="flex items-center gap-1 sm:gap-1.5 text-white/50">
+   483→                  {stat.icon}
+   484→                  <span className="text-[9px] sm:text-[11px] font-medium">{stat.text}</span>
+   485→                </div>
+   486→              ))}
+   487→            </motion.div>
+   488→          </div>
+   489→        </div>
+   490→
+   491→        {/* #4: LIVE MATCH TICKER */}
+   492→        <div className="relative overflow-hidden" style={{
+   493→          background: 'linear-gradient(90deg, rgba(10,12,28,0.97), rgba(14,16,38,0.97))',
+   494→          borderTop: '1px solid rgba(232,163,23,0.12)',
+   495→          borderBottom: '1px solid rgba(232,163,23,0.12)',
+   496→        }}>
+   497→          <div className="flex items-center">
+   498→            <div className="flex items-center gap-1.5 px-3 py-2.5 flex-shrink-0">
+   499→              <div className="relative flex items-center justify-center">
+   500→                <span className="w-2 h-2 rounded-full bg-red-500 block" />
+   501→                <span className="w-2 h-2 rounded-full bg-red-500 absolute animate-ping" style={{ animationDuration: '1.2s' }} />
+   502→              </div>
+   503→              <span className="text-[9px] sm:text-[10px] font-bold text-red-400 uppercase tracking-wider">Live Football</span>
+   504→            </div>
+   505→            <div className="w-px h-5 flex-shrink-0" style={{ background: 'rgba(232,163,23,0.2)' }} />
+   506→            <div ref={tickerContainerRef} className="flex-1 overflow-hidden">
+   507→              <div className="flex gap-2 py-2 whitespace-nowrap" style={{ animation: 'omniTickerScroll 25s linear infinite' }}>
+   508→                {[...TICKER_MATCHES, ...TICKER_MATCHES].map((m, i) => {
+   509→                  const matched = getChannelForComp(m.comp);
+   510→                  const isLive = m.status === 'live';
+   511→                  const isFT = m.status === 'ft';
+   512→                  return (
+   513→                    <motion.button key={i} whileTap={{ scale: 0.95 }}
+   514→                      onClick={() => { if (matched) onChannelSelect(matched); }}
+   515→                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg flex-shrink-0 transition-all hover:bg-white/[0.08]"
+   516→                      style={{ background: isLive ? 'rgba(239,68,68,0.08)' : 'rgba(255,255,255,0.04)', border: isLive ? '1px solid rgba(239,68,68,0.2)' : '1px solid rgba(255,255,255,0.06)' }}>
+   517→                      {isLive && (
+   518→                        <span className="flex items-center justify-center flex-shrink-0">
+   519→                          <span className="w-1.5 h-1.5 rounded-full bg-red-500 block" />
+   520→                          <span className="w-1.5 h-1.5 rounded-full bg-red-500 absolute animate-ping" style={{ animationDuration: '1s' }} />
+   521→                        </span>
+   522→                      )}
+   523→                      {isFT && (
+   524→                        <span className="text-[7px] font-bold px-1 py-0.5 rounded flex-shrink-0" style={{ background: 'rgba(156,163,175,0.2)', color: '#9ca3af' }}>FT</span>
+   525→                      )}
+   526→                      {!isLive && !isFT && (
+   527→                        <span className="text-[7px] font-bold px-1 py-0.5 rounded flex-shrink-0" style={{ background: 'rgba(34,197,94,0.15)', color: '#22c55e' }}>SOON</span>
+   528→                      )}
+   529→                      <span className="text-[10px]">{m.hf}</span>
+   530→                      <span className="text-[9px] sm:text-[10px] text-white font-bold">{m.home}</span>
+   531→                      <span className="text-[9px] sm:text-[10px] font-extrabold px-1 py-0.5 rounded" style={{ background: isLive ? 'rgba(239,68,68,0.15)' : isFT ? 'rgba(156,163,175,0.12)' : 'rgba(34,197,94,0.12)', color: isLive ? '#f87171' : isFT ? '#9ca3af' : '#4ade80' }}>{m.score}</span>
+   532→                      <span className="text-[9px] sm:text-[10px] text-white font-bold">{m.away}</span>
+   533→                      <span className="text-[10px]">{m.af}</span>
+   534→                      <span className="text-[8px] font-medium" style={{ color: isLive ? 'rgba(248,113,113,0.7)' : isFT ? 'rgba(156,163,175,0.4)' : 'rgba(74,222,128,0.6)' }}>{m.min}</span>
+   535→                      <span className="text-[7px] px-1 py-0.5 rounded-full font-semibold" style={{ background: 'rgba(108,132,232,0.15)', color: '#6C84E8' }}>{m.comp}</span>
+   536→                      {matched && <Play className="w-2.5 h-2.5 text-white/25 ml-0.5" />}
+   537→                    </motion.button>
+   538→                  );
+   539→                })}
+   540→              </div>
+   541→            </div>
+   542→          </div>
+   543→        </div>
+   544→      </div>
+   545→
+   546→      {/* SCROLLABLE CONTENT (slides behind sticky hero) */}
+   547→      <div className="relative z-10 omni-glass-bg">
+   548→
+   549→        {/* #2: CURATED FOOTBALL CHANNELS */}
+   550→        <div className="px-3 sm:px-4 pt-4 sm:pt-5">
+   551→          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
+   552→            className="flex items-center gap-2 mb-3">
+   553→            <Signal className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#E8A317]" />
+   554→            <h2 className="text-xs sm:text-sm font-bold text-[#1a1a2e]">Football Channels</h2>
+   555→            <span className="text-[9px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-full ml-auto" style={{ background: 'rgba(232,163,23,0.1)', color: '#E8A317' }}>Live &amp; Upcoming</span>
+   556→          </motion.div>
+   557→
+   558→          {FOOTBALL_COMPS.map((comp, ci) => (
+   559→            <div key={comp.name} className="mb-4 last:mb-0">
+   560→              <div className="flex items-center gap-2 mb-2">
+   561→                <span className="text-sm">{comp.icon}</span>
+   562→                <h3 className="text-[10px] sm:text-xs font-bold text-[#1a1a2e]">{comp.name}</h3>
+   563→                <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, rgba(0,0,0,0.06), transparent)' }} />
+   564→              </div>
+   565→              <div className="flex gap-2 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
+   566→                {comp.channels.map((bc) => {
+   567→                  const matched = getMatchedChannel(bc.terms);
+   568→                  const hasUrl = 'url' in bc && typeof bc.url === 'string';
+   569→                  return (
+   570→                    <motion.button key={bc.name}
+   571→                      initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 + ci * 0.05 }}
+   572→                      whileTap={{ scale: 0.96 }}
+   573→                      onClick={() => {
+   574→                        if (hasUrl) window.open((bc as { url: string }).url, '_blank');
+   575→                        else if (matched) onChannelSelect(matched);
+   576→                      }}
+   577→                      className="flex-shrink-0 rounded-xl overflow-hidden text-left transition-all"
+   578→                      style={{ width: '155px', opacity: 1, cursor: 'pointer' }}>
+   579→                      <div className="relative h-[58px] flex items-center justify-between px-3" style={{ background: comp.gradient }}>
+   580→                        <div>
+   581→                          <p className="text-[10px] sm:text-[11px] font-bold text-white leading-tight">{bc.name}</p>
+   582→                          <p className="text-[8px] text-white/50 mt-0.5 font-medium">{hasUrl ? 'Watch on YouTube' : matched ? 'Watch Now' : 'Search Online'}</p>
+   583→                        </div>
+   584→                        <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+   585→                          style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.1)' }}>
+   586→                          <span className="text-sm">{countryCodeToFlag(bc.country)}</span>
+   587→                        </div>
+   588→                        <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
+   589→                          <span className="w-1.5 h-1.5 rounded-full bg-red-500 block" />
+   590→                          <span className="w-1.5 h-1.5 rounded-full bg-red-500 absolute animate-ping" style={{ animationDuration: '1.5s' }} />
+   591→                        </div>
+   592→                      </div>
+   593→                      <div className="px-3 py-2 flex items-center justify-between" style={{
+   594→                        background: '#ffffff', border: '1px solid rgba(0,0,0,0.04)',
+   595→                        borderTop: `2px solid ${comp.accent}`,
+   596→                      }}>
+   597→                        <span className="text-[8px] font-bold uppercase tracking-wider" style={{
+   598→                          color: hasUrl ? '#ef4444' : matched ? '#6C84E8' : '#9ca3af',
+   599→                          background: hasUrl ? '#fef2f2' : matched ? '#E8EDFF' : '#f5f7fa',
+   600→                          padding: '2px 6px', borderRadius: '4px',
+   601→                        }}>
+   602→                          {hasUrl ? 'YouTube' : matched ? 'Watch' : 'Search'}
+   603→                        </span>
+   604→                        {hasUrl ? <Play className="w-3 h-3 text-[#ef4444]" fill="currentColor" /> : matched ? <Play className="w-3 h-3 text-[#6C84E8]" fill="currentColor" /> : <Search className="w-3 h-3 text-[#9ca3af]" />}
+   605→                      </div>
+   606→                    </motion.button>
+   607→                  );
+   608→                })}
+   609→              </div>
+   610→            </div>
+   611→          ))}
+   612→        </div>
+   613→
+   614→        {/* TOP PLAYERS */}
+   615→        <div className="px-3 sm:px-4 pt-5 sm:pt-6">
+   616→          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
+   617→            className="flex items-center gap-2 mb-3">
+   618→            <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#E8A317]" />
+   619→            <h2 className="text-xs sm:text-sm font-bold text-[#1a1a2e]">Stars to Watch</h2>
+   620→            <Sparkles className="w-3 h-3 text-[#E8A317]/60" />
+   621→          </motion.div>
+   622→          <div className="flex gap-2 overflow-x-auto pb-2 omni-scrollbar" style={{ scrollbarWidth: 'none' }}>
+   623→            {TOP_PLAYERS.map((player, i) => (
+   624→              <motion.div key={player.name}
+   625→                initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65 + i * 0.07 }}
+   626→                className="flex-shrink-0 w-[140px] sm:w-[160px] rounded-xl sm:rounded-2xl p-3 sm:p-3.5"
+   627→                style={{ background: '#ffffff', border: '1px solid rgba(0,0,0,0.04)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+   628→                <div className="flex items-center gap-2 mb-2">
+   629→                  <span className="text-lg">{player.flag}</span>
+   630→                  <div className="flex-1 min-w-0">
+   631→                    <p className="text-[10px] sm:text-xs font-bold text-[#1a1a2e] truncate">{player.name}</p>
+   632→                    <p className="text-[8px] sm:text-[9px] text-[#9ca3af]">{player.position}</p>
+   633→                  </div>
+   634→                </div>
+   635→                <div className="flex items-center justify-between">
+   636→                  <span className="text-[8px] sm:text-[9px] text-[#6b7280] font-medium">{player.team}</span>
+   637→                  <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-md" style={{ background: '#E8EDFF', color: '#6C84E8' }}>{player.rating}</span>
+   638→                </div>
+   639→              </motion.div>
+   640→            ))}
+   641→          </div>
+   642→        </div>
+   643→
+   644→        {/* TOP TEAMS */}
+   645→        <div className="px-3 sm:px-4 pt-5 sm:pt-6">
+   646→          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}
+   647→            className="flex items-center gap-2 mb-3">
+   648→            <Crown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#E8A317]" />
+   649→            <h2 className="text-xs sm:text-sm font-bold text-[#1a1a2e]">Top Ranked Teams</h2>
+   650→          </motion.div>
+   651→          <div className="grid grid-cols-2 gap-2">
+   652→            {TOP_TEAMS.slice(0, 6).map((team, i) => (
+   653→              <motion.div key={team.code}
+   654→                initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.75 + i * 0.06 }}
+   655→                className="rounded-xl sm:rounded-2xl p-2.5 sm:p-3 flex items-center gap-2.5"
+   656→                style={{ background: '#ffffff', border: '1px solid rgba(0,0,0,0.04)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+   657→                <div className="text-xl sm:text-2xl">{team.flag}</div>
+   658→                <div className="flex-1 min-w-0">
+   659→                  <p className="text-[10px] sm:text-xs font-bold text-[#1a1a2e]">{team.name}</p>
+   660→                  <p className="text-[8px] sm:text-[9px] text-[#9ca3af] truncate">{team.recent}</p>
+   661→                </div>
+   662→                <div className="text-right flex-shrink-0">
+   663→                  <span className="text-[9px] sm:text-[10px] font-bold" style={{ color: i < 3 ? '#E8A317' : '#9ca3af' }}>#{team.ranking}</span>
+   664→                  {team.trophies > 0 && <p className="text-[8px] text-[#E8A317]/70">{team.trophies}x Trophy</p>}
+   665→                </div>
+   666→              </motion.div>
+   667→            ))}
+   668→          </div>
+   669→        </div>
+   670→
+   671→        {/* HOST NATIONS */}
+   672→        <div className="px-3 sm:px-4 pt-5 sm:pt-6">
+   673→          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}
+   674→            className="flex items-center gap-2 mb-3">
+   675→            <Landmark className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#E8A317]" />
+   676→            <h2 className="text-xs sm:text-sm font-bold text-[#1a1a2e]">Venues &amp; Hosts</h2>
+   677→          </motion.div>
+   678→          <div className="flex gap-1.5 mb-3 p-1 rounded-xl" style={{ background: '#f0f2f5' }}>
+   679→            {HOST_COUNTRIES.map((country, i) => (
+   680→              <motion.button key={country.code} onClick={() => setActiveHostTab(i)} whileTap={{ scale: 0.97 }}
+   681→                className={`flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 ${activeHostTab === i ? 'omni-pill-active' : 'text-[#6b7280] hover:text-[#2D2D44]'}`}>
+   682→                <span className="text-sm">{countryCodeToFlag(country.code)}</span>
+   683→                <span className="hidden sm:inline">{country.name.split(' ')[0]}</span>
+   684→              </motion.button>
+   685→            ))}
+   686→          </div>
+   687→          <AnimatePresence mode="wait">
+   688→            <motion.div key={activeHostTab}
+   689→              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+   690→              transition={{ duration: 0.2 }}
+   691→              className="rounded-xl sm:rounded-2xl overflow-hidden"
+   692→              style={{ background: '#ffffff', border: '1px solid rgba(0,0,0,0.04)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+   693→              <div className="p-3 sm:p-4">
+   694→                <div className="flex items-center gap-2 mb-2">
+   695→                  <span className="text-xl">{countryCodeToFlag(HOST_COUNTRIES[activeHostTab].code)}</span>
+   696→                  <div>
+   697→                    <p className="text-xs sm:text-sm font-bold text-[#1a1a2e]">{HOST_COUNTRIES[activeHostTab].name}</p>
+   698→                    <p className="text-[9px] sm:text-[10px] text-[#9ca3af]">{HOST_COUNTRIES[activeHostTab].venues.length} stadium venues</p>
+   699→                  </div>
+   700→                </div>
+   701→                <div className="space-y-1.5">
+   702→                  {HOST_COUNTRIES[activeHostTab].venues.map((venue, vi) => (
+   703→                    <div key={vi} className="flex items-center gap-2 py-1.5 px-2 rounded-lg" style={{ background: vi === 0 || vi === (activeHostTab === 0 ? 10 : 2) ? 'rgba(232,163,23,0.06)' : '#f5f7fa' }}>
+   704→                      <MapPin className={`w-3 h-3 flex-shrink-0 ${vi === 0 || vi === (activeHostTab === 0 ? 10 : 2) ? 'text-[#E8A317]' : 'text-[#9ca3af]'}`} />
+   705→                      <span className="text-[9px] sm:text-[10px] text-[#1a1a2e] font-medium truncate">{venue}</span>
+   706→                      {(vi === 0 || vi === (activeHostTab === 0 ? 10 : 2)) && (
+   707→                        <span className="text-[7px] sm:text-[8px] font-bold px-1.5 py-0.5 rounded-full ml-auto flex-shrink-0" style={{ background: 'rgba(232,163,23,0.1)', color: '#E8A317' }}>
+   708→                          {vi === 0 ? 'OPENING' : 'FINAL'}
+   709→                        </span>
+   710→                      )}
+   711→                    </div>
+   712→                  ))}
+   713→                </div>
+   714→              </div>
+   715→              <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, transparent 0%, #E8A317 50%, transparent 100%)' }} />
+   716→            </motion.div>
+   717→          </AnimatePresence>
+   718→        </div>
+   719→
+   720→        {/* SCHEDULE */}
+   721→        <div className="px-3 sm:px-4 pt-5 sm:pt-6">
+   722→          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.85 }}
+   723→            className="flex items-center gap-2 mb-3">
+   724→            <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#6C84E8]" />
+   725→            <h2 className="text-xs sm:text-sm font-bold text-[#1a1a2e]">Tournament Schedule</h2>
+   726→          </motion.div>
+   727→          <div className="space-y-1.5">
+   728→            {SCHEDULE_PHASES.map((phase, i) => (
+   729→              <motion.div key={phase.phase}
+   730→                initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.9 + i * 0.05 }}
+   731→                className="flex items-start gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl"
+   732→                style={{ background: i === SCHEDULE_PHASES.length - 1 ? 'linear-gradient(135deg, rgba(232,163,23,0.08) 0%, rgba(232,163,23,0.02) 100%)' : '#ffffff', border: i === SCHEDULE_PHASES.length - 1 ? '1px solid rgba(232,163,23,0.15)' : '1px solid rgba(0,0,0,0.04)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+   733→                <div className="flex flex-col items-center pt-0.5">
+   734→                  <div className={`w-2.5 h-2.5 rounded-full ${i === SCHEDULE_PHASES.length - 1 ? 'bg-[#E8A317]' : 'bg-[#6C84E8]/30'}`} style={i === SCHEDULE_PHASES.length - 1 ? { boxShadow: '0 0 8px rgba(232,163,23,0.4)' } : {}} />
+   735→                  {i < SCHEDULE_PHASES.length - 1 && <div className="w-px h-6 mt-1" style={{ background: 'rgba(108,132,232,0.15)' }} />}
+   736→                </div>
+   737→                <div className="flex-1 min-w-0">
+   738→                  <div className="flex items-center gap-2">
+   739→                    <p className={`text-[10px] sm:text-xs font-bold ${i === SCHEDULE_PHASES.length - 1 ? 'text-[#E8A317]' : 'text-[#1a1a2e]'}`}>
+   740→                      {i === SCHEDULE_PHASES.length - 1 && <Crown className="w-3 h-3 inline mr-0.5" />}
+   741→                      {phase.phase}
+   742→                    </p>
+   743→                    {i === SCHEDULE_PHASES.length - 1 && <Target className="w-3 h-3 text-[#E8A317]/60" />}
+   744→                  </div>
+   745→                  <p className="text-[9px] sm:text-[10px] text-[#6C84E8] font-medium mt-0.5">{phase.dates || phase.date}</p>
+   746→                  <p className="text-[8px] sm:text-[9px] text-[#9ca3af] mt-0.5 leading-relaxed">{phase.desc}</p>
+   747→                </div>
+   748→                <span className="text-[9px] sm:text-[10px] font-bold px-2 py-1 rounded-lg flex-shrink-0" style={{ background: '#E8EDFF', color: '#6C84E8' }}>{phase.matches}</span>
+   749→              </motion.div>
+   750→            ))}
+   751→          </div>
+   752→        </div>
+   753→
+   754→        {/* QUALIFYING CONFEDERATIONS */}
+   755→        <div className="px-3 sm:px-4 pt-5 sm:pt-6">
+   756→          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.95 }}
+   757→            className="flex items-center gap-2 mb-3">
+   758→            <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#3090A8]" />
+   759→            <h2 className="text-xs sm:text-sm font-bold text-[#1a1a2e]">Qualifying Confederations</h2>
+   760→            <span className="text-[9px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-full ml-auto" style={{ background: '#E8EDFF', color: '#6C84E8' }}>48 slots</span>
+   761→          </motion.div>
+   762→          <div className="rounded-xl sm:rounded-2xl overflow-hidden p-3" style={{ background: '#ffffff', border: '1px solid rgba(0,0,0,0.04)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+   763→            <div className="space-y-2">
+   764→              {CONFEDERATIONS.map((conf, i) => (
+   765→                <div key={conf.name} className="flex items-center gap-2">
+   766→                  <div className="w-full rounded-lg overflow-hidden h-2 sm:h-2.5" style={{ background: '#f0f2f5' }}>
+   767→                    <motion.div initial={{ width: 0 }} animate={{ width: `${(conf.teams / 49) * 100}%` }} transition={{ duration: 0.8, delay: 1.0 + i * 0.1 }}
+   768→                      className="h-full rounded-lg" style={{ background: conf.color }} />
+   769→                  </div>
+   770→                  <span className="text-[9px] sm:text-[10px] font-bold text-[#1a1a2e] w-5 text-right flex-shrink-0">{conf.teams}</span>
+   771→                </div>
+   772→              ))}
+   773→            </div>
+   774→            <div className="flex flex-wrap gap-x-3 gap-y-1 mt-3">
+   775→              {CONFEDERATIONS.map((conf) => (
+   776→                <div key={conf.name} className="flex items-center gap-1.5">
+   777→                  <div className="w-2 h-2 rounded-full" style={{ background: conf.color }} />
+   778→                  <span className="text-[8px] sm:text-[9px] text-[#6b7280] font-medium">{conf.name}</span>
+   779→                </div>
+   780→              ))}
+   781→            </div>
+   782→          </div>
+   783→        </div>
+   784→
+   785→        {/* ALL SPORTS CHANNELS (from API) */}
+   786→        {mode === 'tv' && (
+   787→          <div className="px-3 sm:px-4 pt-5 sm:pt-6 pb-4">
+   788→            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}
+   789→              className="flex items-center justify-between mb-3">
+   790→              <div className="flex items-center gap-2">
+   791→                <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#6C84E8]" />
+   792→                <h2 className="text-xs sm:text-sm font-bold text-[#1a1a2e]">All Sports Channels</h2>
+   793→                {totalChannels > 0 && <span className="text-[9px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: '#E8EDFF', color: '#6C84E8' }}>{totalChannels}</span>}
+   794→              </div>
+   795→            </motion.div>
+   796→            {loading && (
+   797→              <div className="space-y-2">
+   798→                {Array.from({ length: 4 }).map((_, i) => (
+   799→                  <motion.div key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.1 }} className="h-14 sm:h-16 rounded-xl sm:rounded-2xl omni-shimmer" />
+   800→                ))}
+   801→              </div>
+   802→            )}
+   803→            <AnimatePresence>
+   804→              {!loading && featuredChannels.length > 0 && (
+   805→                <div className="space-y-1.5 sm:space-y-2">
+   806→                  {featuredChannels.map((channel, index) => (
+   807→                    <motion.button key={channel.nanoid}
+   808→                      initial={{ opacity: 0, x: -12, scale: 0.97 }} animate={{ opacity: 1, x: 0, scale: 1 }}
+   809→                      transition={{ duration: 0.25, delay: Math.min(index * 0.04, 0.4), ease: [0.4, 0, 0.2, 1] }}
+   810→                      onClick={() => onChannelSelect(channel)}
+   811→                      className="w-full flex items-center gap-2.5 sm:gap-3 px-2.5 sm:px-3.5 py-3 sm:py-4 rounded-xl sm:rounded-2xl text-left group transition-all duration-200"
+   812→                      style={{ background: '#ffffff', border: '1px solid rgba(0,0,0,0.04)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+   813→                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0 group-hover:shadow-sm transition-all" style={{ background: '#f5f7fa', border: '1px solid rgba(0,0,0,0.04)' }}>
+   814→                        <span className="text-sm sm:text-lg">{countryCodeToFlag(channel.country)}</span>
+   815→                      </div>
+   816→                      <div className="flex-1 min-w-0">
+   817→                        <p className="text-xs sm:text-sm text-[#1a1a2e] truncate font-semibold">{channel.name}</p>
+   818→                        <div className="flex items-center gap-1 sm:gap-1.5 mt-0.5">
+   819→                          {channel.languages.slice(0, 2).map(lang => (
+   820→                            <span key={lang} className="text-[8px] sm:text-[9px] px-1.5 sm:px-2 py-0.5 rounded-full font-medium" style={{ background: '#E8EDFF', color: '#6C84E8' }}>{LANGUAGE_NAMES[lang] || lang}</span>
+   821→                          ))}
+   822→                        </div>
+   823→                      </div>
+   824→                      <div className="flex items-center gap-1 flex-shrink-0">
+   825→                        <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+   826→                        <span className="text-[8px] sm:text-[9px] font-bold uppercase text-red-500 tracking-wider">LIVE</span>
+   827→                      </div>
+   828→                      <ChevronRight className="w-4 h-4 text-[#d1d5db] group-hover:text-[#6C84E8] transition-colors flex-shrink-0" />
+   829→                    </motion.button>
+   830→                  ))}
+   831→                </div>
+   832→              )}
+   833→            </AnimatePresence>
+   834→            {!loading && featuredChannels.length === 0 && <div className="text-center py-8"><p className="text-xs text-[#9ca3af]">No sports channels available</p></div>}
+   835→          </div>
+   836→        )}
+   837→
+   838→        {/* BROADCAST INFO */}
+   839→        <div className="px-3 sm:px-4 pb-4 sm:pb-6">
+   840→          <div className="rounded-xl sm:rounded-2xl overflow-hidden" style={{ background: '#ffffff', border: '1px solid rgba(0,0,0,0.04)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+   841→            <div className="p-3 sm:p-4">
+   842→              <div className="flex items-center gap-2 mb-3">
+   843→                <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#E8A317]" />
+   844→                <h3 className="text-xs sm:text-sm font-bold text-[#1a1a2e]">Official Broadcasters</h3>
+   845→              </div>
+   846→              <div className="grid grid-cols-2 gap-2">
+   847→                {[
+   848→                  { flag: '\u{1F1FA}\u{1F1F8}', name: 'Fox Sports / Telemundo' }, { flag: '\u{1F1EC}\u{1F1E7}', name: 'BBC / ITV' },
+   849→                  { flag: '\u{1F1E7}\u{1F1F7}', name: 'TV Globo' }, { flag: '\u{1F1EB}\u{1F1F7}', name: 'TF1 / beIN Sports' },
+   850→                  { flag: '\u{1F1EA}\u{1F1F8}', name: 'RTVE / Movistar+' }, { flag: '\u{1F1E9}\u{1F1EA}', name: 'ARD / ZDF' },
+   851→                  { flag: '\u{1F1EF}\u{1F1F5}', name: 'NHK / Fuji TV' }, { flag: '\u{1F1EE}\u{1F1F3}', name: 'JioCinema / Sports18' },
+   852→                ].map((b, i) => (
+   853→                  <div key={i} className="flex items-center gap-1.5 py-1.5 px-2 rounded-lg" style={{ background: '#f5f7fa' }}>
+   854→                    <span className="text-sm">{b.flag}</span>
+   855→                    <span className="text-[9px] sm:text-[10px] text-[#1a1a2e] font-medium truncate">{b.name}</span>
+   856→                  </div>
+   857→                ))}
+   858→              </div>
+   859→            </div>
+   860→            <div className="h-[2px]" style={{ background: 'linear-gradient(90deg, transparent 0%, #E8A317 50%, transparent 100%)' }} />
+   861→          </div>
+   862→        </div>
+   863→
+   864→        {/* BROWSE ALL BUTTON */}
+   865→        <div className="px-3 sm:px-4 pb-8 sm:pb-10">
+   866→          <motion.button initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.0 }}
+   867→            whileTap={{ scale: 0.97 }} onClick={onClose}
+   868→            className="w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold text-white flex items-center justify-center gap-2 transition-all"
+   869→            style={{ background: 'linear-gradient(135deg, #6C84E8 0%, #8B6CC4 100%)', boxShadow: '0 4px 16px rgba(108,132,232,0.3)' }}>
+   870→            {mode === 'tv' ? <Tv className="w-4 h-4" /> : <Radio className="w-4 h-4" />}
+   871→            Browse All Channels
+   872→            <ChevronRight className="w-4 h-4" />
+   873→          </motion.button>
+   874→        </div>
+   875→      </div>
+   876→
+   877→      {/* CSS KEYFRAMES FOR FLOATING ANIMATIONS */}
+   878→      <style dangerouslySetInnerHTML={{ __html: `
+   879→        @keyframes omniTickerScroll {
+   880→          0% { transform: translateX(0); }
+   881→          100% { transform: translateX(-50%); }
+   882→        }
+   883→        @keyframes omniFloatUp {
+   884→          0% { transform: translateY(0) scale(1) rotate(-2deg); }
+   885→          50% { transform: translateY(-55vh) scale(1.04) rotate(1deg); }
+   886→          100% { transform: translateY(-115vh) scale(1.08) rotate(-1deg); }
+   887→        }
+   888→        @keyframes omniFloatFade {
+   889→          0% { opacity: 0; }
+   890→          6% { opacity: 0.15; }
+   891→          50% { opacity: 0.12; }
+   892→          88% { opacity: 0.08; }
+   893→          100% { opacity: 0; }
+   894→        }
+   895→      ` }} />
+   896→    </div>
+   897→  );
+   898→}
+   899→
