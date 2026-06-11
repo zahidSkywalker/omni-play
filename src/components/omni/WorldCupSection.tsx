@@ -250,8 +250,8 @@ const FOOTBALL_COMPS = [
     gradient: 'linear-gradient(135deg, #0d3320 0%, #1a6b3c 100%)', accent: '#1a6b3c',
     channels: [
       /* ── Bangladesh 🇧🇩 ── */
-      { name: 'Somoy TV', country: 'bd', terms: ['somoy'] },
-      { name: 'BTV', country: 'bd', terms: ['btv'] },
+      { name: 'Somoy TV', country: 'bd', terms: ['somoy tv'] },
+      { name: 'Real Madrid TV', country: 'es', terms: ['real madrid'] },
       { name: 'RTA Sport', country: 'af', terms: ['rta sport'] },
       /* ── India 🇮🇳 ── */
       { name: 'DD Sports', country: 'in', terms: ['dd sport'] },
@@ -317,8 +317,8 @@ const FOOTBALL_COMPS = [
     gradient: 'linear-gradient(135deg, #38003C 0%, #6B2D8E 100%)', accent: '#6B2D8E',
     channels: [
       /* ── Bangladesh 🇧🇩 ── */
-      { name: 'Somoy TV', country: 'bd', terms: ['somoy'] },
-      { name: 'BTV', country: 'bd', terms: ['btv'] },
+      { name: 'Somoy TV', country: 'bd', terms: ['somoy tv'] },
+      { name: 'Real Madrid TV', country: 'es', terms: ['real madrid'] },
       /* ── Middle East ── */
       { name: 'KTV Sport', country: 'kw', terms: ['ktv sport'] },
       { name: 'KTV Sport Plus', country: 'kw', terms: ['ktv sport plus'] },
@@ -346,8 +346,8 @@ const FOOTBALL_COMPS = [
     gradient: 'linear-gradient(135deg, #0A1628 0%, #14274E 100%)', accent: '#14274E',
     channels: [
       /* ── Bangladesh 🇧🇩 ── */
-      { name: 'Somoy TV', country: 'bd', terms: ['somoy'] },
-      { name: 'BTV', country: 'bd', terms: ['btv'] },
+      { name: 'Somoy TV', country: 'bd', terms: ['somoy tv'] },
+      { name: 'Real Madrid TV', country: 'es', terms: ['real madrid'] },
       /* ── Middle East ── */
       { name: 'KTV Sport', country: 'kw', terms: ['ktv sport'] },
       { name: 'Bahrain Sports 1', country: 'bh', terms: ['bahrain sport'] },
@@ -851,7 +851,10 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
                       initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 + ci * 0.05 }}
                       whileTap={{ scale: 0.96 }}
                       onClick={() => {
-                        if (hasUrl) window.open((bc as { url: string }).url, '_blank');
+                        if (hasUrl) {
+                          const ytUrl = (bc as { url: string }).url;
+                          onChannelSelect({ nanoid: 'yt-' + bc.name, name: bc.name, stream_urls: [], youtube_urls: [ytUrl], languages: [], country: bc.country, isGeoBlocked: false });
+                        }
                         else if (matched) onChannelSelect(matched);
                       }}
                       className="flex-shrink-0 rounded-xl overflow-hidden text-left transition-all"
@@ -859,7 +862,7 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
                       <div className="relative h-[58px] flex items-center justify-between px-3" style={{ background: comp.gradient }}>
                         <div>
                           <p className="text-[10px] sm:text-[11px] font-bold text-white leading-tight">{bc.name}</p>
-                          <p className="text-[8px] text-white/50 mt-0.5 font-medium">{hasUrl ? 'Watch on YouTube' : matched ? 'Watch Now' : 'Search Online'}</p>
+                          <p className="text-[8px] text-white/50 mt-0.5 font-medium">{hasUrl || matched ? 'Watch Now' : 'Search Online'}</p>
                         </div>
                         <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
                           style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.1)' }}>
@@ -875,13 +878,13 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
                         borderTop: `2px solid ${comp.accent}`,
                       }}>
                         <span className="text-[8px] font-bold uppercase tracking-wider" style={{
-                          color: hasUrl ? '#ef4444' : matched ? '#6C84E8' : '#9ca3af',
-                          background: hasUrl ? '#fef2f2' : matched ? '#E8EDFF' : '#f5f7fa',
+                          color: hasUrl || matched ? '#6C84E8' : '#9ca3af',
+                          background: hasUrl || matched ? '#E8EDFF' : '#f5f7fa',
                           padding: '2px 6px', borderRadius: '4px',
                         }}>
-                          {hasUrl ? 'YouTube' : matched ? 'Watch' : 'Search'}
+                          {hasUrl || matched ? 'Watch' : 'Search'}
                         </span>
-                        {hasUrl ? <Play className="w-3 h-3 text-[#ef4444]" fill="currentColor" /> : matched ? <Play className="w-3 h-3 text-[#6C84E8]" fill="currentColor" /> : <Search className="w-3 h-3 text-[#9ca3af]" />}
+                        {hasUrl || matched ? <Play className="w-3 h-3 text-[#6C84E8]" fill="currentColor" /> : <Search className="w-3 h-3 text-[#9ca3af]" />}
                       </div>
                     </motion.button>
                   );
