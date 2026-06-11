@@ -1382,3 +1382,16 @@ body.sidebar-open {
   background-size: 200% 100%;
   animation: bd-card-shimmer 4s ease-in-out infinite;
 }
+
+/* ============================================
+   OMNI PLAY — Tap scale (replaces framer-motion whileTap)
+   ============================================ */
+.omni-tap-scale {
+  transition: transform 0.15s ease;
+}
+.omni-tap-scale:active {
+  transform: scale(0.97);
+}
+.omni-tap-scale-lg:active {
+  transform: scale(0.9);
+}

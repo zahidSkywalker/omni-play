@@ -1,6 +1,6 @@
 'use client';
 
-import React, { type Dispatch, type SetStateAction, useMemo, useState, useRef, useEffect } from 'react';
+import React, { type Dispatch, type SetStateAction, useMemo, useState, useRef, useEffect, type CSSProperties } from 'react';
 import {
   Search,
   Tv,
@@ -24,6 +24,19 @@ import {
   getCategoryIcon,
 } from '@/lib/famelack-types';
 
+/* ── Static style constants (avoid re-creation per render) ── */
+const GOLD_BADGE_STYLE: CSSProperties = { background: 'rgba(232, 163, 23, 0.1)', color: '#E8A317' };
+const BLUE_BADGE_STYLE: CSSProperties = { background: 'rgba(108,132,232,0.1)', color: '#6C84E8' };
+const GREEN_BADGE_STYLE: CSSProperties = { background: 'rgba(76, 175, 80, 0.1)', color: '#4CAF50' };
+const GOLD_SHIMMER_STYLE: CSSProperties = { background: 'linear-gradient(110deg, transparent 30%, rgba(232,163,23,0.04) 50%, transparent 70%)' };
+const LOGO_ICON_STYLE: CSSProperties = { background: '#6C84E8', boxShadow: '0 2px 8px rgba(108,132,232,0.25)' };
+const GOT_IT_BTN_STYLE: CSSProperties = { background: '#6C84E8' };
+const FAVORITES_ICON_STYLE: CSSProperties = { background: 'rgba(76, 175, 80, 0.08)', border: '1px solid rgba(76, 175, 80, 0.12)' };
+const BD_HOME_BADGE_STYLE: CSSProperties = { background: 'rgba(0,106,78,0.12)', color: '#006a4e' };
+const BD_CHANNEL_PILL_STYLE: CSSProperties = { background: 'rgba(0,106,78,0.05)', color: '#006a4e', border: '1px solid rgba(0,106,78,0.1)' };
+const BD_SEPARATOR_STYLE: CSSProperties = { background: 'linear-gradient(90deg, transparent, rgba(0,106,78,0.12), transparent)' };
+const BD_CARD_SEPARATOR_STYLE: CSSProperties = { background: 'linear-gradient(90deg, rgba(0,106,78,0.15), rgba(0,0,0,0.04), transparent)', height: '1px' };
+
 interface SidebarProps {
   mode: Mode;
   setMode: Dispatch<SetStateAction<Mode>>;
@@ -46,7 +59,7 @@ interface SidebarProps {
   isDark?: boolean;
 }
 
-export default function Sidebar({
+function Sidebar({
   mode,
   setMode,
   view,
@@ -174,10 +187,7 @@ export default function Sidebar({
               className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center ${isDark ? 'omni-glass-icon-circle' : ''}`}
               style={isDark ? {
                 boxShadow: '0 2px 12px rgba(108,132,232,0.3)',
-              } : {
-                background: '#6C84E8',
-                boxShadow: '0 2px 8px rgba(108,132,232,0.25)',
-              }}
+              } : LOGO_ICON_STYLE}
             >
               <Tv className={`w-4 h-4 sm:w-4.5 sm:h-4.5 ${isDark ? 'text-[#6C84E8]' : 'text-white'}`} />
             </div>
@@ -202,83 +212,76 @@ export default function Sidebar({
         {/* ── TV / Radio Toggle — Pill Buttons ── */}
         <div className={`px-4 sm:px-5 py-3 sm:py-4`} style={{ borderBottom: isDark ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(0,0,0,0.04)' }}>
           <div className={`flex rounded-lg sm:rounded-xl p-1 gap-1 ${isDark ? 'omni-glass-pill-track' : ''}`} style={isDark ? {} : { background: '#f0f2f5' }}>
-            <motion.button
+            <button
               onClick={() => { setMode('tv'); setSelectedCountry(null); setSelectedCategory(null); }}
               className={`flex-1 flex items-center justify-center gap-1 sm:gap-1.5 py-1.5 sm:py-2 px-2 sm:px-3 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-300 ${
                 mode === 'tv'
                   ? isDark ? 'omni-glass-pill-active' : 'omni-pill-active'
                   : isDark ? 'omni-text-muted hover:text-white/90' : 'text-[#6b7280] hover:text-[#2D2D44]'
               }`}
-              layout
             >
               <Tv className="w-3 sm:w-3.5 sm:h-3.5" />
               TV
-            </motion.button>
-            <motion.button
+            </button>
+            <button
               onClick={() => { setMode('radio'); setSelectedCountry(null); setSelectedCategory(null); }}
               className={`flex-1 flex items-center justify-center gap-1 sm:gap-1.5 py-1.5 sm:py-2 px-2 sm:px-3 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-300 ${
                 mode === 'radio'
                   ? isDark ? 'omni-glass-pill-active' : 'omni-pill-active'
                   : isDark ? 'omni-text-muted hover:text-white/90' : 'text-[#6b7280] hover:text-[#2D2D44]'
               }`}
-              layout
             >
               <Radio className="w-3 sm:w-3.5 sm:h-3.5" />
               Radio
-            </motion.button>
+            </button>
           </div>
         </div>
 
         {/* ── Countries / Categories Toggle ── */}
         <div className="px-3.5 sm:px-4 py-2.5 sm:py-3" style={{ borderBottom: isDark ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(0,0,0,0.04)' }}>
           <div className={`flex gap-1 p-1 rounded-lg sm:rounded-xl ${isDark ? 'omni-glass-pill-track' : ''}`} style={isDark ? {} : { background: '#f5f7fa' }}>
-            <motion.button
+            <button
               onClick={() => { setView('countries'); setShowFavoritesOnly(false); }}
-              className={`flex-1 flex items-center justify-center gap-1 sm:gap-1.5 py-1.5 sm:py-2 px-2 sm:px-3 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 ${
+              className={`omni-tap-scale flex-1 flex items-center justify-center gap-1 sm:gap-1.5 py-1.5 sm:py-2 px-2 sm:px-3 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 ${
                 view === 'countries' && !showFavoritesOnly
                   ? isDark ? 'omni-glass-pill-active' : 'omni-pill-active'
                   : isDark ? 'omni-text-muted hover:text-white/90' : 'text-[#6b7280] hover:text-[#2D2D44]'
               }`}
-              whileTap={{ scale: 0.97 }}
             >
               <Globe className="w-3 sm:w-3.5 sm:h-3.5" />
               Countries
-            </motion.button>
-            <motion.button
+            </button>
+            <button
               onClick={() => { setView('categories'); setShowFavoritesOnly(false); }}
-              className={`flex-1 flex items-center justify-center gap-1 sm:gap-1.5 py-1.5 sm:py-2 px-2 sm:px-3 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 ${
+              className={`omni-tap-scale flex-1 flex items-center justify-center gap-1 sm:gap-1.5 py-1.5 sm:py-2 px-2 sm:px-3 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 ${
                 view === 'categories' && !showFavoritesOnly
                   ? isDark ? 'omni-glass-pill-active' : 'omni-pill-active'
                   : isDark ? 'omni-text-muted hover:text-white/90' : 'text-[#6b7280] hover:text-[#2D2D44]'
               }`}
-              whileTap={{ scale: 0.97 }}
             >
               <Layers className="w-3 sm:w-3.5 sm:h-3.5" />
               Categories
-            </motion.button>
+            </button>
           </div>
         </div>
 
         {/* ── FIFA 2026 — Stunning Calligraphy Style ── */}
         <div className="px-3.5 sm:px-4 pt-2.5 sm:pt-3 pb-1">
-          <motion.button
+          <button
             onClick={() => {
               onShowWorldCup();
               setSidebarOpen(false);
             }}
-            className="w-full flex items-center gap-2 sm:gap-2.5 px-3 sm:px-3.5 py-2.5 sm:py-3 rounded-xl sm:rounded-xl overflow-hidden relative transition-all duration-200"
+            className="omni-tap-scale w-full flex items-center gap-2 sm:gap-2.5 px-3 sm:px-3.5 py-2.5 sm:py-3 rounded-xl sm:rounded-xl overflow-hidden relative transition-all duration-200"
             style={showWorldCup && !showFootballHighlights && !selectedCountry && !selectedCategory && !showFavoritesOnly ? {
               background: 'linear-gradient(135deg, rgba(26,107,60,0.08) 0%, rgba(232,163,23,0.08) 100%)',
               border: '1px solid rgba(232,163,23,0.2)',
             } : {
               border: '1px solid transparent',
             }}
-            whileTap={{ scale: 0.98 }}
           >
             {/* Subtle gold shimmer */}
-            <div className="absolute inset-0 pointer-events-none opacity-0 hover:opacity-100 transition-opacity" style={{
-              background: 'linear-gradient(110deg, transparent 30%, rgba(232,163,23,0.04) 50%, transparent 70%)',
-            }} />
+            <div className="absolute inset-0 pointer-events-none opacity-0 hover:opacity-100 transition-opacity" style={GOLD_SHIMMER_STYLE} />
             <div className="flex items-center gap-2 relative z-10">
               <motion.div
                 animate={showWorldCup && !showFootballHighlights && !selectedCountry && !selectedCategory ? { scale: [1, 1.15, 1] } : {}}
@@ -303,22 +306,22 @@ export default function Sidebar({
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="ml-auto text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full font-semibold relative z-10"
-                style={{ background: 'rgba(232, 163, 23, 0.1)', color: '#E8A317' }}
+                style={GOLD_BADGE_STYLE}
               >
                 Live
               </motion.span>
             )}
-          </motion.button>
+          </button>
         </div>
 
         {/* ── Football Zone Button ── */}
         <div className="px-3.5 sm:px-4 pt-1 sm:pt-2 pb-1">
-          <motion.button
+          <button
             onClick={() => {
               onShowFootballHighlights();
               setSidebarOpen(false);
             }}
-            className={`w-full flex items-center gap-2 sm:gap-2.5 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 ${
+            className={`omni-tap-scale w-full flex items-center gap-2 sm:gap-2.5 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 ${
               showFootballHighlights
                 ? isDark ? 'omni-football-active' : 'text-[#E8A317]'
                 : isDark ? 'omni-text-secondary hover:text-[#E8A317] hover:bg-white/5' : 'text-[#6b7280] hover:text-[#E8A317] hover:bg-[#f5f7fa]'
@@ -327,7 +330,6 @@ export default function Sidebar({
               background: 'rgba(232, 163, 23, 0.06)',
               border: '1px solid rgba(232, 163, 23, 0.12)',
             } : {}}
-            whileTap={{ scale: 0.98 }}
           >
             <motion.div
               animate={showFootballHighlights ? { scale: [1, 1.2, 1] } : {}}
@@ -341,23 +343,23 @@ export default function Sidebar({
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full"
-                style={{ background: 'rgba(232, 163, 23, 0.1)', color: '#E8A317' }}
+                style={GOLD_BADGE_STYLE}
               >
                 Active
               </motion.span>
             )}
-          </motion.button>
+          </button>
         </div>
 
         {/* ── World View Button ── */}
         <div className="px-3.5 sm:px-4 pt-1 sm:pt-2 pb-1">
-          <motion.button
+          <button
             onClick={() => {
               onShowWorldView();
               setView('countries');
               setSidebarOpen(false);
             }}
-            className={`w-full flex items-center gap-2 sm:gap-2.5 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 ${
+            className={`omni-tap-scale w-full flex items-center gap-2 sm:gap-2.5 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 ${
               !showFootballHighlights && !showWorldCup && !selectedCountry && !selectedCategory && !showFavoritesOnly
                 ? isDark ? 'omni-football-active' : 'text-[#6C84E8]'
                 : isDark ? 'omni-text-secondary hover:text-[#6C84E8] hover:bg-white/5' : 'text-[#6b7280] hover:text-[#6C84E8] hover:bg-[#f5f7fa]'
@@ -366,7 +368,6 @@ export default function Sidebar({
               background: 'rgba(108,132,232,0.06)',
               border: '1px solid rgba(108,132,232,0.12)',
             } : {}}
-            whileTap={{ scale: 0.98 }}
           >
             <motion.div
               animate={!showFootballHighlights && !showWorldCup && !selectedCountry && !selectedCategory && !showFavoritesOnly ? { scale: [1, 1.2, 1] } : {}}
@@ -380,19 +381,19 @@ export default function Sidebar({
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full"
-                style={{ background: 'rgba(108,132,232,0.1)', color: '#6C84E8' }}
+                style={BLUE_BADGE_STYLE}
               >
                 Active
               </motion.span>
             )}
-          </motion.button>
+          </button>
         </div>
 
         {/* ── Favorites Button ── */}
         <div className="px-3.5 sm:px-4 pt-1 sm:pt-2 pb-1">
-          <motion.button
+          <button
             onClick={handleShowFavorites}
-            className={`w-full flex items-center gap-2 sm:gap-2.5 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 ${
+            className={`omni-tap-scale w-full flex items-center gap-2 sm:gap-2.5 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 ${
               showFavoritesOnly
                 ? 'text-[#4CAF50]'
                 : isDark ? 'omni-text-secondary hover:text-white/90 hover:bg-white/5' : 'text-[#6b7280] hover:text-[#2D2D44] hover:bg-[#f5f7fa]'
@@ -401,7 +402,6 @@ export default function Sidebar({
               background: 'rgba(76, 175, 80, 0.06)',
               border: '1px solid rgba(76, 175, 80, 0.12)',
             } : {}}
-            whileTap={{ scale: 0.98 }}
           >
             <motion.div
               animate={showFavoritesOnly ? { scale: [1, 1.2, 1] } : {}}
@@ -419,12 +419,12 @@ export default function Sidebar({
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full"
-                style={{ background: 'rgba(76, 175, 80, 0.1)', color: '#4CAF50' }}
+                style={GREEN_BADGE_STYLE}
               >
                 Active
               </motion.span>
             )}
-          </motion.button>
+          </button>
         </div>
 
         {/* ── Scrollable List ── */}
@@ -482,10 +482,7 @@ export default function Sidebar({
               >
                 <div
                   className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
-                  style={{
-                    background: 'rgba(76, 175, 80, 0.08)',
-                    border: '1px solid rgba(76, 175, 80, 0.12)',
-                  }}
+                  style={FAVORITES_ICON_STYLE}
                 >
                   <Heart className="w-7 h-7 text-[#4CAF50]" />
                 </div>
@@ -532,7 +529,7 @@ export default function Sidebar({
                 style={isDark ? {} : { boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }}
               >
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: '#6C84E8', boxShadow: '0 2px 8px rgba(108,132,232,0.25)' }}>
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={LOGO_ICON_STYLE}>
                     <Tv className="w-4 h-4 text-white" />
                   </div>
                   <div>
@@ -546,7 +543,7 @@ export default function Sidebar({
                 <button
                   onClick={() => setShowAbout(false)}
                   className="w-full py-2.5 rounded-xl text-xs font-semibold text-white"
-                  style={{ background: '#6C84E8' }}
+                  style={GOT_IT_BTN_STYLE}
                 >
                   Got it
                 </button>
@@ -558,6 +555,8 @@ export default function Sidebar({
     </>
   );
 }
+
+export default React.memo(Sidebar);
 
 const MY_COUNTRY_CHANNELS = [
   { name: 'T-Sports', color: '#006a4e' },
@@ -621,14 +620,13 @@ function MyCountryCard({ onSelect, isDark = true }: { onSelect: () => void; isDa
             {MY_COUNTRY_CHANNELS.length} channels available
           </p>
         </div>
-        <motion.button
+        <button
           onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
-          whileTap={{ scale: 0.9 }}
-          className={`p-1 rounded-lg transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/5'}`}
+          className={`omni-tap-scale-lg p-1 rounded-lg transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-black/5'}`}
         >
           {expanded && <ChevronUp className="w-3.5 h-3.5 text-[#4CAF50]" />}
           {!expanded && <ChevronDown className="w-3.5 h-3.5" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : '#9ca3af' }} />}
-        </motion.button>
+        </button>
       </div>
 
       {/* Expanded channel list */}
@@ -770,10 +768,7 @@ function CountryList({
                   </div>
                   <span
                     className="text-[7px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
-                    style={{
-                      background: 'rgba(0,106,78,0.12)',
-                      color: '#006a4e',
-                    }}
+                    style={BD_HOME_BADGE_STYLE}
                   >
                     HOME
                   </span>
@@ -811,9 +806,7 @@ function CountryList({
                   <div className="px-3 pb-3 pt-0.5">
                     <div
                       className="w-full h-px mb-2"
-                      style={{
-                        background: 'linear-gradient(90deg, transparent, rgba(0,106,78,0.12), transparent)',
-                      }}
+                      style={BD_SEPARATOR_STYLE}
                     />
                     <div className="flex flex-wrap gap-1.5">
                       {bdChannels.map((ch, i) => (
@@ -828,11 +821,7 @@ function CountryList({
                             ease: [0.4, 0, 0.2, 1],
                           }}
                           className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium cursor-default select-none"
-                          style={{
-                            background: 'rgba(0,106,78,0.05)',
-                            color: '#006a4e',
-                            border: '1px solid rgba(0,106,78,0.1)',
-                          }}
+                          style={BD_CHANNEL_PILL_STYLE}
                         >
                           <span
                             className="w-1.5 h-1.5 rounded-full flex-shrink-0"
@@ -857,11 +846,7 @@ function CountryList({
           {/* Separator line */}
           <div
             className="mx-3 mt-2 mb-1"
-            style={{
-              background:
-                'linear-gradient(90deg, rgba(0,106,78,0.15), rgba(0,0,0,0.04), transparent)',
-              height: '1px',
-            }}
+            style={BD_CARD_SEPARATOR_STYLE}
           />
         </div>
       )}

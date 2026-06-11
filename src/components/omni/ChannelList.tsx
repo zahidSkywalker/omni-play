@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, memo } from 'react';
 import dynamic from 'next/dynamic';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Clock, Lock, Tv, Radio, ChevronRight, Heart, Search, Trophy, ArrowLeft } from 'lucide-react';
 import {
   type Channel,
@@ -18,6 +18,130 @@ const GlobeSelector = dynamic(() => import('./GlobeSelector'), {
   ssr: false,
   loading: () => null,
 });
+
+// ── Static style constants (no re-allocation on each render) ──
+
+const DARK_FLOATING_BTN_STYLE = {
+  background: 'rgba(255,255,255,0.08)',
+  border: '1px solid rgba(255,255,255,0.1)',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+  backdropFilter: 'blur(8px)',
+  color: '#E8A317',
+};
+
+const LIGHT_FLOATING_BTN_STYLE = {
+  background: 'rgba(255,255,255,0.9)',
+  border: '1px solid rgba(0,0,0,0.06)',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+  backdropFilter: 'blur(8px)',
+  color: '#E8A317',
+};
+
+const LIGHT_HEADER_STYLE = {
+  background: '#ffffff',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+  border: '1px solid rgba(0,0,0,0.04)',
+};
+
+const CHANNEL_ICON_STYLES = {
+  activeDark: { background: 'rgba(108,132,232,0.15)', border: '1px solid rgba(108,132,232,0.2)' },
+  activeLight: { background: '#E8EDFF', border: '1px solid rgba(108, 132, 232, 0.15)' },
+  inactiveDark: { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.06)' },
+  inactiveLight: { background: '#f5f7fa', border: '1px solid rgba(0,0,0,0.04)' },
+} as const;
+
+const LANG_BADGE_DARK = { background: 'rgba(108,132,232,0.15)', color: '#6C84E8' };
+const LANG_BADGE_LIGHT = { background: '#E8EDFF', color: '#6C84E8' };
+
+function getChannelIconStyle(isActive: boolean, isDark: boolean) {
+  if (isActive) return isDark ? CHANNEL_ICON_STYLES.activeDark : CHANNEL_ICON_STYLES.activeLight;
+  return isDark ? CHANNEL_ICON_STYLES.inactiveDark : CHANNEL_ICON_STYLES.inactiveLight;
+}
+
+function getLangBadgeStyle(isDark: boolean) {
+  return isDark ? LANG_BADGE_DARK : LANG_BADGE_LIGHT;
+}
+
+// ── CSS transition styles for channel cards (injected once) ──
+
+const CHANNEL_CARD_CSS = `
+  .channel-card {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .channel-card.channel-card--entered {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+`;
+
+const CHANNEL_CARD_CSS_ID = 'channel-list-anim-css';
+
+function injectChannelCardStyles() {
+  if (typeof document === 'undefined' || document.getElementById(CHANNEL_CARD_CSS_ID)) return;
+  const style = document.createElement('style');
+  style.id = CHANNEL_CARD_CSS_ID;
+  style.textContent = CHANNEL_CARD_CSS;
+  document.head.appendChild(style);
+}
+
+function removeChannelCardStyles() {
+  const el = document.getElementById(CHANNEL_CARD_CSS_ID);
+  if (el) el.remove();
+}
+
+// ── LiveClock: isolated memo component so the 10s tick doesn't re-render the whole list ──
+
+const LiveClock = memo(function LiveClock({
+  timeZone,
+  className,
+}: {
+  timeZone: string;
+  className?: string;
+}) {
+  const [localTime, setLocalTime] = useState<string>('');
+
+  useEffect(() => {
+    let active = true;
+
+    function tick() {
+      if (!active) return;
+      try {
+        const formatter = new Intl.DateTimeFormat('en-US', {
+          timeZone,
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        });
+        setLocalTime(formatter.format(new Date()));
+      } catch {
+        // ignore
+      }
+    }
+
+    // Use setTimeout(0) to defer setState out of the effect body
+    const timeout = setTimeout(tick, 0);
+    const interval = setInterval(tick, 10000);
+
+    return () => {
+      active = false;
+      clearTimeout(timeout);
+      clearInterval(interval);
+    };
+  }, [timeZone]);
+
+  if (!localTime) return null;
+
+  return (
+    <span className={className}>
+      <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+      {localTime}
+    </span>
+  );
+});
+
+// ── Main component ──
 
 interface ChannelListProps {
   mode: Mode;
@@ -38,7 +162,7 @@ interface ChannelListProps {
   isDark?: boolean;
 }
 
-export default function ChannelList({
+export default memo(function ChannelList({
   mode,
   view,
   selectedCountry,
@@ -56,42 +180,20 @@ export default function ChannelList({
   onShowFootballHighlights,
   isDark = true,
 }: ChannelListProps) {
-  const [localTime, setLocalTime] = useState<string>('');
+  const [mounted, setMounted] = useState(false);
   const meta = selectedCountry ? metadata[selectedCountry] : null;
 
-  // Local time ticker
+  // Inject channel card CSS transition styles once
   useEffect(() => {
-    if (!meta?.timeZone) {
-      return;
-    }
+    injectChannelCardStyles();
+    return () => removeChannelCardStyles();
+  }, []);
 
-    let active = true;
-
-    function tick() {
-      if (!active) return;
-      try {
-        const formatter = new Intl.DateTimeFormat('en-US', {
-          timeZone: meta!.timeZone,
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true,
-        });
-        setLocalTime(formatter.format(new Date()));
-      } catch {
-        // ignore
-      }
-    }
-
-    // Use setTimeout(0) to defer setState out of the effect body
-    const timeout = setTimeout(tick, 0);
-    const interval = setInterval(tick, 10000);
-
-    return () => {
-      active = false;
-      clearTimeout(timeout);
-      clearInterval(interval);
-    };
-  }, [meta]);
+  // Trigger staggered CSS entry animation after first paint
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
   const filteredChannels = useMemo(() => {
     let result = channels;
@@ -125,19 +227,7 @@ export default function ChannelList({
               onClick={onShowWorldCup}
               whileTap={{ scale: 0.95 }}
               className="absolute top-3 left-3 z-20 min-w-[44px] min-h-[44px] flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] sm:text-xs font-semibold transition-all duration-200"
-              style={isDark ? {
-                background: 'rgba(255,255,255,0.08)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                backdropFilter: 'blur(8px)',
-                color: '#E8A317',
-              } : {
-                background: 'rgba(255,255,255,0.9)',
-                border: '1px solid rgba(0,0,0,0.06)',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                backdropFilter: 'blur(8px)',
-                color: '#E8A317',
-              }}
+              style={isDark ? DARK_FLOATING_BTN_STYLE : LIGHT_FLOATING_BTN_STYLE}
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <Trophy className="w-3 h-3" />
@@ -154,19 +244,7 @@ export default function ChannelList({
               className={`absolute top-3 right-3 z-20 min-w-[44px] min-h-[44px] flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] sm:text-xs font-semibold transition-all duration-200 ${
                 isDark ? 'omni-glass-card' : ''
               }`}
-              style={isDark ? {
-                background: 'rgba(255,255,255,0.08)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                backdropFilter: 'blur(8px)',
-                color: '#E8A317',
-              } : {
-                background: 'rgba(255,255,255,0.9)',
-                border: '1px solid rgba(0,0,0,0.06)',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                backdropFilter: 'blur(8px)',
-                color: '#E8A317',
-              }}
+              style={isDark ? DARK_FLOATING_BTN_STYLE : LIGHT_FLOATING_BTN_STYLE}
             >
               <span>⚽</span>
               <span className="hidden sm:inline">Football</span>
@@ -304,12 +382,7 @@ export default function ChannelList({
                 </div>
                 <div className="flex items-center gap-2 sm:gap-3 mt-1">
                   <span className="text-[10px] sm:text-[11px] text-white/60">{meta.capital}</span>
-                  {localTime && (
-                    <span className="flex items-center gap-1 text-[10px] sm:text-[11px] text-emerald-300/80">
-                      <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                      {localTime}
-                    </span>
-                  )}
+                  <LiveClock timeZone={meta.timeZone} className="flex items-center gap-1 text-[10px] sm:text-[11px] text-emerald-300/80" />
                 </div>
               </div>
               {/* Channel count */}
@@ -339,11 +412,7 @@ export default function ChannelList({
           className={`flex items-center gap-2.5 sm:gap-3.5 px-3 sm:px-4 py-3 sm:py-4 rounded-xl sm:rounded-2xl mx-2 mt-2 mb-1 ${
             isDark ? 'omni-glass-card' : ''
           }`}
-          style={isDark ? {} : {
-            background: '#ffffff',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-            border: '1px solid rgba(0,0,0,0.04)',
-          }}
+          style={isDark ? {} : LIGHT_HEADER_STYLE}
         >
           <span className="text-2xl sm:text-3xl leading-none">
             {countryCodeToFlag(selectedCountry!)}
@@ -354,12 +423,7 @@ export default function ChannelList({
             </h2>
             <div className="flex items-center gap-2 sm:gap-3 mt-0.5">
               <span className={`text-[10px] sm:text-[11px] ${isDark ? 'omni-text-muted' : 'text-[#9ca3af]'}`}>{meta.capital}</span>
-              {localTime && (
-                <span className="flex items-center gap-1 text-[10px] sm:text-[11px] text-[#6C84E8]/70">
-                  <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                  {localTime}
-                </span>
-              )}
+              <LiveClock timeZone={meta.timeZone} className="flex items-center gap-1 text-[10px] sm:text-[11px] text-[#6C84E8]/70" />
             </div>
           </div>
           <span
@@ -383,11 +447,7 @@ export default function ChannelList({
           className={`flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-3 sm:py-4 rounded-xl sm:rounded-2xl mx-2 mt-2 mb-1 ${
             isDark ? 'omni-glass-card' : ''
           }`}
-          style={isDark ? {} : {
-            background: '#ffffff',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-            border: '1px solid rgba(0,0,0,0.04)',
-          }}
+          style={isDark ? {} : LIGHT_HEADER_STYLE}
         >
           <h2 className={`text-xs sm:text-sm font-bold capitalize flex-1 ${isDark ? 'omni-text-primary' : 'text-[#1a1a2e]'}`}>
             {selectedCategory.replace(/-/g, ' ')}
@@ -430,125 +490,106 @@ export default function ChannelList({
         </motion.div>
       )}
 
-      {/* ── Channel List ── */}
+      {/* ── Channel List (CSS transitions, no framer-motion) ── */}
       <div className={`flex-1 overflow-y-auto p-2 sm:p-3 ${isDark ? 'omni-glass-scrollbar' : 'omni-scrollbar'}`}>
-        <AnimatePresence mode="sync">
-          {filteredChannels.length > 0 ? (
-            filteredChannels.map((channel, index) => {
-              const isActive = currentChannel?.nanoid === channel.nanoid;
-              const isFav = favoriteIds.includes(channel.nanoid);
+        {filteredChannels.length > 0 ? (
+          filteredChannels.map((channel, index) => {
+            const isActive = currentChannel?.nanoid === channel.nanoid;
+            const isFav = favoriteIds.includes(channel.nanoid);
 
-              return (
-                <motion.button
-                  key={channel.nanoid}
-                  initial={{ opacity: 0, y: 12, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -8, scale: 0.96 }}
-                  transition={{
-                    duration: 0.2,
-                    delay: Math.min(index * 0.025, 0.4),
-                    ease: [0.4, 0, 0.2, 1],
-                  }}
-                  onClick={() => onChannelSelect(channel)}
-                  className={`w-full flex items-center gap-2.5 sm:gap-3 px-2.5 sm:px-3 py-3 sm:py-4 rounded-xl sm:rounded-2xl text-left group mb-1 sm:mb-1.5 transition-all duration-200 ${
-                    isActive
-                      ? isDark ? 'omni-glass-card-active' : 'omni-card-active'
-                      : isDark ? 'omni-glass-card' : 'omni-card'
-                  }`}
-                >
-                  {/* Channel icon */}
-                  <div
-                    className={`w-10 h-10 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
-                      isActive
-                        ? isDark ? '' : 'shadow-md shadow-[#6C84E8]/10'
-                        : isDark ? '' : 'group-hover:shadow-sm'
-                    }`}
-                    style={isActive
-                      ? isDark
-                        ? { background: 'rgba(108,132,232,0.15)', border: '1px solid rgba(108,132,232,0.2)' }
-                        : { background: '#E8EDFF', border: '1px solid rgba(108, 132, 232, 0.15)' }
-                      : isDark
-                        ? { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.06)' }
-                        : { background: '#f5f7fa', border: '1px solid rgba(0,0,0,0.04)' }
-                    }
-                  >
-                    <span className="text-xs sm:text-sm">{countryCodeToFlag(channel.country)}</span>
-                  </div>
-
-                  {/* Channel info */}
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-xs sm:text-sm truncate font-semibold leading-tight ${isDark ? 'omni-text-primary' : 'text-[#1a1a2e]'}`}>
-                      {channel.name}
-                    </p>
-                    <div className="flex items-center gap-1 sm:gap-1.5 mt-0.5 sm:mt-1">
-                      {channel.languages.slice(0, 2).map(lang => (
-                        <span
-                          key={lang}
-                          className="text-[9px] sm:text-[10px] px-2 sm:px-2.5 py-0.5 rounded-full font-medium"
-                          style={{
-                            background: isDark ? 'rgba(108,132,232,0.15)' : '#E8EDFF',
-                            color: '#6C84E8',
-                          }}
-                        >
-                          {LANGUAGE_NAMES[lang] || lang}
-                        </span>
-                      ))}
-                      {channel.isGeoBlocked && (
-                        <span className="flex items-center gap-0.5 text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full" style={{ color: '#f59e0b' }}>
-                          <Lock className="w-2.5 h-2.5" />
-                          <span className="hidden sm:inline">Geo</span><span className="sm:hidden">G</span>
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Favorite + Chevron */}
-                  <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
-                    {isFav && (
-                      <Heart className="w-3 h-3 text-[#4CAF50] fill-[#4CAF50]" />
-                    )}
-                    <ChevronRight className={`w-4 h-4 transition-all duration-200 ${
-                      isActive
-                        ? 'text-[#6C84E8]'
-                        : isDark ? 'omni-text-muted group-hover:text-white/60' : 'text-[#d1d5db] group-hover:text-[#9ca3af]'
-                    }`} />
-                  </div>
-                </motion.button>
-              );
-            })
-          ) : (
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className="flex flex-col items-center justify-center py-12 sm:py-20 text-center px-4 sm:px-6"
-            >
-              <div
-                className={`w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 ${
-                  isDark ? 'omni-glass-icon-circle' : ''
+            return (
+              <button
+                key={channel.nanoid}
+                onClick={() => onChannelSelect(channel)}
+                className={`channel-card ${mounted ? 'channel-card--entered' : ''} w-full flex items-center gap-2.5 sm:gap-3 px-2.5 sm:px-3 py-3 sm:py-4 rounded-xl sm:rounded-2xl text-left group mb-1 sm:mb-1.5 transition-all duration-200 ${
+                  isActive
+                    ? isDark ? 'omni-glass-card-active' : 'omni-card-active'
+                    : isDark ? 'omni-glass-card' : 'omni-card'
                 }`}
-                style={isDark ? {
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                } : {
-                  background: '#f5f7fa',
-                  border: '1px solid rgba(0,0,0,0.04)',
-                }}
+                style={{ transitionDelay: `${Math.min(index * 0.025, 0.4)}s` }}
               >
-                <Search className={`w-6 h-6 ${isDark ? 'omni-text-muted' : 'text-[#9ca3af]'}`} />
-              </div>
-              <p className={`text-xs sm:text-sm font-medium ${isDark ? 'omni-text-secondary' : 'text-[#6b7280]'}`}>
-                {searchQuery ? 'No channels match your search' :
-                 showFavoritesOnly ? 'No favorites yet — tap the heart to save' :
-                 'No channels found'}
-              </p>
-              <p className={`text-[10px] sm:text-xs mt-1 sm:mt-1.5 ${isDark ? 'omni-text-muted' : 'text-[#9ca3af]'}`}>
-                {searchQuery ? 'Try a different keyword or clear the search' : ''}
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                {/* Channel icon */}
+                <div
+                  className={`w-10 h-10 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
+                    isActive
+                      ? isDark ? '' : 'shadow-md shadow-[#6C84E8]/10'
+                      : isDark ? '' : 'group-hover:shadow-sm'
+                  }`}
+                  style={getChannelIconStyle(isActive, isDark)}
+                >
+                  <span className="text-xs sm:text-sm">{countryCodeToFlag(channel.country)}</span>
+                </div>
+
+                {/* Channel info */}
+                <div className="flex-1 min-w-0">
+                  <p className={`text-xs sm:text-sm truncate font-semibold leading-tight ${isDark ? 'omni-text-primary' : 'text-[#1a1a2e]'}`}>
+                    {channel.name}
+                  </p>
+                  <div className="flex items-center gap-1 sm:gap-1.5 mt-0.5 sm:mt-1">
+                    {channel.languages.slice(0, 2).map(lang => (
+                      <span
+                        key={lang}
+                        className="text-[9px] sm:text-[10px] px-2 sm:px-2.5 py-0.5 rounded-full font-medium"
+                        style={getLangBadgeStyle(isDark)}
+                      >
+                        {LANGUAGE_NAMES[lang] || lang}
+                      </span>
+                    ))}
+                    {channel.isGeoBlocked && (
+                      <span className="flex items-center gap-0.5 text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-full" style={{ color: '#f59e0b' }}>
+                        <Lock className="w-2.5 h-2.5" />
+                        <span className="hidden sm:inline">Geo</span><span className="sm:hidden">G</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Favorite + Chevron */}
+                <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
+                  {isFav && (
+                    <Heart className="w-3 h-3 text-[#4CAF50] fill-[#4CAF50]" />
+                  )}
+                  <ChevronRight className={`w-4 h-4 transition-all duration-200 ${
+                    isActive
+                      ? 'text-[#6C84E8]'
+                      : isDark ? 'omni-text-muted group-hover:text-white/60' : 'text-[#d1d5db] group-hover:text-[#9ca3af]'
+                  }`} />
+                </div>
+              </button>
+            );
+          })
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="flex flex-col items-center justify-center py-12 sm:py-20 text-center px-4 sm:px-6"
+          >
+            <div
+              className={`w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-3 sm:mb-4 ${
+                isDark ? 'omni-glass-icon-circle' : ''
+              }`}
+              style={isDark ? {
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.08)',
+              } : {
+                background: '#f5f7fa',
+                border: '1px solid rgba(0,0,0,0.04)',
+              }}
+            >
+              <Search className={`w-6 h-6 ${isDark ? 'omni-text-muted' : 'text-[#9ca3af]'}`} />
+            </div>
+            <p className={`text-xs sm:text-sm font-medium ${isDark ? 'omni-text-secondary' : 'text-[#6b7280]'}`}>
+              {searchQuery ? 'No channels match your search' :
+               showFavoritesOnly ? 'No favorites yet — tap the heart to save' :
+               'No channels found'}
+            </p>
+            <p className={`text-[10px] sm:text-xs mt-1 sm:mt-1.5 ${isDark ? 'omni-text-muted' : 'text-[#9ca3af]'}`}>
+              {searchQuery ? 'Try a different keyword or clear the search' : ''}
+            </p>
+          </motion.div>
+        )}
       </div>
     </div>
   );
-}
+});

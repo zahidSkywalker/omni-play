@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Trophy, MapPin, Calendar, Tv, Radio, ChevronRight, Zap, Star, Users, Globe,
@@ -89,7 +89,7 @@ const WORLD_CUP_FIXTURES: Fixture[] = [
   { id: 19, group: 'J', home: 'Netherlands', homeCode: 'nl', away: 'Ivory Coast', awayCode: 'ci', kickoff: '2026-06-18T22:00:00Z', venue: 'NRG Stadium', matchday: 1 },
   { id: 20, group: 'J', home: 'Italy', homeCode: 'it', away: 'Tunisia', awayCode: 'tn', kickoff: '2026-06-19T01:00:00Z', venue: 'Hard Rock Stadium', matchday: 1 },
 
-  /* ── Group K: Belgium, Serbia, Cameroon, Cura\u00e7ao ── */
+  /* ── Group K: Belgium, Serbia, Cameroon, Curaçao ── */
   { id: 21, group: 'K', home: 'Belgium', homeCode: 'be', away: 'Cura\u00e7ao', awayCode: 'cw', kickoff: '2026-06-19T22:00:00Z', venue: 'AT&T Stadium', matchday: 1 },
   { id: 22, group: 'K', home: 'Serbia', homeCode: 'rs', away: 'Cameroon', awayCode: 'cm', kickoff: '2026-06-20T01:00:00Z', venue: 'Lumen Field', matchday: 1 },
 
@@ -203,13 +203,13 @@ const WORLD_CUP_FIXTURES: Fixture[] = [
 ];
 
 const SCHEDULE_PHASES = [
-  { phase: 'Group Stage', dates: 'Jun 11 \u2013 Jul 5', matches: 72, desc: '12 groups of 4 teams. Top 2 + 8 best 3rd-placed advance to knockout.' },
-  { phase: 'Round of 32', dates: 'Jul 8 \u2013 Jul 11', matches: 16, desc: 'Single-elimination knockout begins.' },
-  { phase: 'Round of 16', dates: 'Jul 12 \u2013 Jul 15', matches: 8, desc: 'Win or go home \u2014 no second chances.' },
-  { phase: 'Quarter-Finals', dates: 'Jul 17 \u2013 Jul 19', matches: 4, desc: 'The final eight battle for a semifinal spot.' },
-  { phase: 'Semi-Finals', dates: 'Jul 21 \u2013 Jul 22', matches: 2, desc: 'Two matches that define the tournament.' },
+  { phase: 'Group Stage', dates: 'Jun 11 – Jul 5', matches: 72, desc: '12 groups of 4 teams. Top 2 + 8 best 3rd-placed advance to knockout.' },
+  { phase: 'Round of 32', dates: 'Jul 8 – Jul 11', matches: 16, desc: 'Single-elimination knockout begins.' },
+  { phase: 'Round of 16', dates: 'Jul 12 – Jul 15', matches: 8, desc: 'Win or go home — no second chances.' },
+  { phase: 'Quarter-Finals', dates: 'Jul 17 – Jul 19', matches: 4, desc: 'The final eight battle for a semifinal spot.' },
+  { phase: 'Semi-Finals', dates: 'Jul 21 – Jul 22', matches: 2, desc: 'Two matches that define the tournament.' },
   { phase: 'Third-Place', date: 'Jul 24', matches: 1, desc: 'Bronze medal match in Miami.' },
-  { phase: 'Final', date: 'Jul 25', matches: 1, desc: 'The biggest match in football \u2014 MetLife Stadium, New Jersey.' },
+  { phase: 'Final', date: 'Jul 25', matches: 1, desc: 'The biggest match in football — MetLife Stadium, New Jersey.' },
 ];
 
 const TOP_PLAYERS = [
@@ -431,6 +431,9 @@ const FOOTBALL_COMPS = [
   },
 ];
 
+/* Reusable inline style constants */
+const WC_CARD_STYLE: React.CSSProperties = { background: '#ffffff', border: '1px solid rgba(0,0,0,0.04)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' };
+
 /* #3: FLOATING PLAYER IMAGE CONFIGS */
 const FLOATING_PLAYERS = Array.from({ length: 14 }, (_, i) => ({
   src: `/characters/player${i + 1}.jpg`,
@@ -451,7 +454,7 @@ const TICKER_MATCHES = [
   { home: 'Arsenal', hf: '\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}', away: 'Inter', af: '\u{1F1EE}\u{1F1F9}', comp: 'UCL', status: 'upcoming', min: '21:00', score: 'vs' },
 ];
 
-export default function WorldCupSection({ mode, onChannelSelect, onClose }: WorldCupSectionProps) {
+function WorldCupSection({ mode, onChannelSelect, onClose }: WorldCupSectionProps) {
   const [now, setNow] = useState(Date.now());
   const [sportsChannels, setSportsChannels] = useState<Channel[]>([]);
   const [bdChannels, setBdChannels] = useState<Channel[]>([]);
@@ -460,6 +463,7 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
   const [activeHostTab, setActiveHostTab] = useState(0);
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [floatingVisible, setFloatingVisible] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const tickerContainerRef = useRef<HTMLDivElement>(null);
 
@@ -467,6 +471,12 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
   useEffect(() => {
     const iv = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(iv);
+  }, []);
+
+  /* Trigger staggered CSS entry animation after first paint */
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(raf);
   }, []);
 
   /* Smart match-aware countdown logic */
@@ -612,6 +622,9 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
     return getMatchedChannel(['sky sport', 'bein sport', 'espn', 'bbc sport', 'fox sport']);
   }, [getMatchedChannel]);
 
+  /* Shorthand for the mounted CSS class toggle */
+  const wc = (base: string) => `${base} ${mounted ? 'wc-entered' : ''}`;
+
   return (
     <div className="flex-1 overflow-y-auto omni-scrollbar relative">
 
@@ -648,7 +661,7 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(232,163,23,0.12) 0%, transparent 70%)' }} />
           </div>
 
-          {/* Particles */}
+          {/* Particles — kept as motion.div (complex infinite keyframe animation) */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             {Array.from({ length: 4 }).map((_, i) => (
               <motion.div key={i} className="absolute rounded-full"
@@ -662,27 +675,24 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
 
           {/* Countdown content */}
           <div className="relative px-4 sm:px-6 pt-4 sm:pt-5 pb-3 sm:pb-4 text-center">
-            {/* FIFA 2026 Mascot */}
+            {/* FIFA 2026 Mascot — kept as motion.div (spring animation) */}
             <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', damping: 12, stiffness: 200, delay: 0.1 }}
               className="flex items-center justify-center mb-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/fifa-mascot.png" alt="FIFA 2026 Mascot" className="w-16 h-16 sm:w-20 sm:h-20 drop-shadow-lg object-contain" loading="eager" style={{ filter: 'drop-shadow(0 4px 24px rgba(232,163,23,0.5))' }} />
             </motion.div>
-            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-              className="text-lg sm:text-xl md:text-2xl font-bold text-white tracking-tight">
+            <h1 className={wc('wc-fade-up-lg text-lg sm:text-xl md:text-2xl font-bold text-white tracking-tight')} style={{ transitionDelay: '0.2s' }}>
               FIFA World Cup{' '}
               <span className="inline-block" style={{ background: 'linear-gradient(135deg, #E8A317, #FFD700, #E8A317)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                 2026
               </span>
-            </motion.h1>
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}
-              className="text-[10px] sm:text-xs text-white/50 mt-0.5 font-medium tracking-wide">
+            </h1>
+            <p className={wc('wc-fade text-[10px] sm:text-xs text-white/50 mt-0.5 font-medium tracking-wide')} style={{ transitionDelay: '0.35s' }}>
               United States &middot; Mexico &middot; Canada
-            </motion.p>
+            </p>
 
             {/* Match Countdown Cards / Live Indicators */}
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}
-              className="flex flex-wrap items-stretch justify-center gap-1.5 sm:gap-2 mt-2.5 sm:mt-3 max-w-md sm:max-w-lg mx-auto">
+            <div className={wc('wc-fade-up flex flex-wrap items-stretch justify-center gap-1.5 sm:gap-2 mt-2.5 sm:mt-3 max-w-md sm:max-w-lg mx-auto')} style={{ transitionDelay: '0.45s' }}>
               {allFixturesDone ? (
                 <div className="flex flex-col items-center px-6 py-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
                   <Trophy className="w-6 h-6 mb-2" style={{ color: '#E8A317' }} />
@@ -750,11 +760,10 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
                   </div>
                 );
               })}
-            </motion.div>
+            </div>
 
             {/* Stats */}
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
-              className="flex items-center justify-center gap-3 sm:gap-4 mt-2.5 sm:mt-3">
+            <div className={wc('wc-fade flex items-center justify-center gap-3 sm:gap-4 mt-2.5 sm:mt-3')} style={{ transitionDelay: '0.6s' }}>
               {[
                 { icon: <Users className="w-3 h-3 sm:w-3.5 sm:h-3.5" />, text: '48 Teams' },
                 { icon: <Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5" />, text: '104 Matches' },
@@ -765,7 +774,7 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
                   <span className="text-[9px] sm:text-[11px] font-medium">{stat.text}</span>
                 </div>
               ))}
-            </motion.div>
+            </div>
           </div>
         </div>
 
@@ -791,9 +800,9 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
                   const isLive = m.status === 'live';
                   const isFT = m.status === 'ft';
                   return (
-                    <motion.button key={i} whileTap={{ scale: 0.95 }}
+                    <button key={i}
                       onClick={() => { if (matched) onChannelSelect(matched); }}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg flex-shrink-0 transition-all hover:bg-white/[0.08]"
+                      className="omni-tap-scale inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg flex-shrink-0 transition-all hover:bg-white/[0.08]"
                       style={{ background: isLive ? 'rgba(239,68,68,0.08)' : 'rgba(255,255,255,0.04)', border: isLive ? '1px solid rgba(239,68,68,0.2)' : '1px solid rgba(255,255,255,0.06)' }}>
                       {isLive && (
                         <span className="flex items-center justify-center flex-shrink-0">
@@ -815,7 +824,7 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
                       <span className="text-[8px] font-medium" style={{ color: isLive ? 'rgba(248,113,113,0.7)' : isFT ? 'rgba(156,163,175,0.4)' : 'rgba(74,222,128,0.6)' }}>{m.min}</span>
                       <span className="text-[7px] px-1 py-0.5 rounded-full font-semibold" style={{ background: 'rgba(108,132,232,0.15)', color: '#6C84E8' }}>{m.comp}</span>
                       {matched && <Play className="w-2.5 h-2.5 text-white/25 ml-0.5" />}
-                    </motion.button>
+                    </button>
                   );
                 })}
               </div>
@@ -829,12 +838,11 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
 
         {/* #2: CURATED FOOTBALL CHANNELS */}
         <div className="px-3 sm:px-4 pt-4 sm:pt-5">
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
-            className="flex items-center gap-2 mb-3">
+          <div className={wc('wc-fade-up flex items-center gap-2 mb-3')} style={{ transitionDelay: '0.5s' }}>
             <Signal className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#E8A317]" />
             <h2 className="text-xs sm:text-sm font-bold text-[#1a1a2e]">Football Channels</h2>
             <span className="text-[9px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-full ml-auto" style={{ background: 'rgba(232,163,23,0.1)', color: '#E8A317' }}>Live &amp; Upcoming</span>
-          </motion.div>
+          </div>
 
           {FOOTBALL_COMPS.map((comp, ci) => (
             <div key={comp.name} className="mb-4 last:mb-0">
@@ -848,9 +856,7 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
                   const matched = getMatchedChannel(bc.terms);
                   const hasUrl = 'url' in bc && typeof bc.url === 'string';
                   return (
-                    <motion.button key={bc.name}
-                      initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 + ci * 0.05 }}
-                      whileTap={{ scale: 0.96 }}
+                    <button key={bc.name}
                       onClick={() => {
                         if (hasUrl) {
                           const ytUrl = (bc as { url: string }).url;
@@ -858,8 +864,8 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
                         }
                         else if (matched) onChannelSelect(matched);
                       }}
-                      className="flex-shrink-0 rounded-xl overflow-hidden text-left transition-all"
-                      style={{ width: '155px', opacity: 1, cursor: 'pointer' }}>
+                      className={`omni-tap-scale ${wc('wc-fade-up')} flex-shrink-0 rounded-xl overflow-hidden text-left transition-all`}
+                      style={{ width: '155px', cursor: 'pointer', transitionDelay: `${0.55 + ci * 0.05}s` }}>
                       <div className="relative h-[58px] flex items-center justify-between px-3" style={{ background: comp.gradient }}>
                         <div>
                           <p className="text-[10px] sm:text-[11px] font-bold text-white leading-tight">{bc.name}</p>
@@ -887,7 +893,7 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
                         </span>
                         {hasUrl || matched ? <Play className="w-3 h-3 text-[#6C84E8]" fill="currentColor" /> : <Search className="w-3 h-3 text-[#9ca3af]" />}
                       </div>
-                    </motion.button>
+                    </button>
                   );
                 })}
               </div>
@@ -897,18 +903,16 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
 
         {/* TOP PLAYERS */}
         <div className="px-3 sm:px-4 pt-5 sm:pt-6">
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
-            className="flex items-center gap-2 mb-3">
+          <div className={wc('wc-fade-up flex items-center gap-2 mb-3')} style={{ transitionDelay: '0.6s' }}>
             <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#E8A317]" />
             <h2 className="text-xs sm:text-sm font-bold text-[#1a1a2e]">Stars to Watch</h2>
             <Sparkles className="w-3 h-3 text-[#E8A317]/60" />
-          </motion.div>
+          </div>
           <div className="flex gap-2 overflow-x-auto pb-2 omni-scrollbar" style={{ scrollbarWidth: 'none' }}>
             {TOP_PLAYERS.map((player, i) => (
-              <motion.div key={player.name}
-                initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65 + i * 0.07 }}
-                className="flex-shrink-0 w-[140px] sm:w-[160px] rounded-xl sm:rounded-2xl p-3 sm:p-3.5"
-                style={{ background: '#ffffff', border: '1px solid rgba(0,0,0,0.04)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+              <div key={player.name}
+                className={wc('wc-fade-up flex-shrink-0 w-[140px] sm:w-[160px] rounded-xl sm:rounded-2xl p-3 sm:p-3.5')}
+                style={{ ...WC_CARD_STYLE, transitionDelay: `${0.65 + i * 0.07}s` }}>
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-lg">{player.flag}</span>
                   <div className="flex-1 min-w-0">
@@ -920,28 +924,26 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
                   <span className="text-[8px] sm:text-[9px] text-[#6b7280] font-medium">{player.team}</span>
                   <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-md" style={{ background: '#E8EDFF', color: '#6C84E8' }}>{player.rating}</span>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
 
         {/* GROUP STAGE FIXTURES */}
         <div className="px-3 sm:px-4 pt-5 sm:pt-6">
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65 }}
-            className="flex items-center gap-2 mb-3">
+          <div className={wc('wc-fade-up flex items-center gap-2 mb-3')} style={{ transitionDelay: '0.65s' }}>
             <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#E8A317]" />
             <h2 className="text-xs sm:text-sm font-bold text-[#1a1a2e]">Group Stage Fixtures</h2>
             <span className="text-[9px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-full ml-auto" style={{ background: 'rgba(232,163,23,0.1)', color: '#E8A317' }}>72 Matches</span>
-          </motion.div>
+          </div>
           <div className="space-y-3">
             {['A','B','C','D','E','F','G','H','I','J','K','L'].map((grp, gi) => {
               const groupFixtures = WORLD_CUP_FIXTURES.filter(f => f.group === grp);
               if (groupFixtures.length === 0) return null;
               return (
-                <motion.div key={grp}
-                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 + gi * 0.03 }}
-                  className="rounded-xl sm:rounded-2xl overflow-hidden"
-                  style={{ background: '#ffffff', border: '1px solid rgba(0,0,0,0.04)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                <div key={grp}
+                  className={wc('wc-fade-up rounded-xl sm:rounded-2xl overflow-hidden')}
+                  style={{ ...WC_CARD_STYLE, transitionDelay: `${0.7 + gi * 0.03}s` }}>
                   <div className="flex items-center gap-2 px-3 py-2" style={{ background: 'linear-gradient(135deg, #0d2137 0%, #161b22 100%)' }}>
                     <span className="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded" style={{ background: 'rgba(232,163,23,0.2)', color: '#E8A317' }}>Group {grp}</span>
                     <div className="flex-1" />
@@ -990,7 +992,7 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
                       );
                     })}
                   </div>
-                </motion.div>
+                </div>
               );
             })}
           </div>
@@ -998,17 +1000,15 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
 
         {/* TOP TEAMS */}
         <div className="px-3 sm:px-4 pt-5 sm:pt-6">
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}
-            className="flex items-center gap-2 mb-3">
+          <div className={wc('wc-fade-up flex items-center gap-2 mb-3')} style={{ transitionDelay: '0.7s' }}>
             <Crown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#E8A317]" />
             <h2 className="text-xs sm:text-sm font-bold text-[#1a1a2e]">Top Ranked Teams</h2>
-          </motion.div>
+          </div>
           <div className="grid grid-cols-2 gap-2">
             {TOP_TEAMS.slice(0, 6).map((team, i) => (
-              <motion.div key={team.code}
-                initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.75 + i * 0.06 }}
-                className="rounded-xl sm:rounded-2xl p-2.5 sm:p-3 flex items-center gap-2.5"
-                style={{ background: '#ffffff', border: '1px solid rgba(0,0,0,0.04)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+              <div key={team.code}
+                className={wc('wc-fade-scale rounded-xl sm:rounded-2xl p-2.5 sm:p-3 flex items-center gap-2.5')}
+                style={{ ...WC_CARD_STYLE, transitionDelay: `${0.75 + i * 0.06}s` }}>
                 <div className="text-xl sm:text-2xl">{team.flag}</div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[10px] sm:text-xs font-bold text-[#1a1a2e]">{team.name}</p>
@@ -1018,33 +1018,33 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
                   <span className="text-[9px] sm:text-[10px] font-bold" style={{ color: i < 3 ? '#E8A317' : '#9ca3af' }}>#{team.ranking}</span>
                   {team.trophies > 0 && <p className="text-[8px] text-[#E8A317]/70">{team.trophies}x Trophy</p>}
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
 
         {/* HOST NATIONS */}
         <div className="px-3 sm:px-4 pt-5 sm:pt-6">
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}
-            className="flex items-center gap-2 mb-3">
+          <div className={wc('wc-fade-up flex items-center gap-2 mb-3')} style={{ transitionDelay: '0.8s' }}>
             <Landmark className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#E8A317]" />
             <h2 className="text-xs sm:text-sm font-bold text-[#1a1a2e]">Venues &amp; Hosts</h2>
-          </motion.div>
+          </div>
           <div className="flex gap-1.5 mb-3 p-1 rounded-xl" style={{ background: '#f0f2f5' }}>
             {HOST_COUNTRIES.map((country, i) => (
-              <motion.button key={country.code} onClick={() => setActiveHostTab(i)} whileTap={{ scale: 0.97 }}
-                className={`flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 ${activeHostTab === i ? 'omni-pill-active' : 'text-[#6b7280] hover:text-[#2D2D44]'}`}>
+              <button key={country.code} onClick={() => setActiveHostTab(i)}
+                className={`omni-tap-scale flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-[10px] sm:text-xs font-semibold transition-all duration-200 ${activeHostTab === i ? 'omni-pill-active' : 'text-[#6b7280] hover:text-[#2D2D44]'}`}>
                 <span className="text-sm">{countryCodeToFlag(country.code)}</span>
                 <span className="hidden sm:inline">{country.name.split(' ')[0]}</span>
-              </motion.button>
+              </button>
             ))}
           </div>
+          {/* Kept as motion.div with AnimatePresence for exit animation on tab switch */}
           <AnimatePresence mode="wait">
             <motion.div key={activeHostTab}
               initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2 }}
               className="rounded-xl sm:rounded-2xl overflow-hidden"
-              style={{ background: '#ffffff', border: '1px solid rgba(0,0,0,0.04)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+              style={{ ...WC_CARD_STYLE }}>
               <div className="p-3 sm:p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-xl">{countryCodeToFlag(HOST_COUNTRIES[activeHostTab].code)}</span>
@@ -1074,17 +1074,15 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
 
         {/* SCHEDULE */}
         <div className="px-3 sm:px-4 pt-5 sm:pt-6">
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.85 }}
-            className="flex items-center gap-2 mb-3">
+          <div className={wc('wc-fade-up flex items-center gap-2 mb-3')} style={{ transitionDelay: '0.85s' }}>
             <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#6C84E8]" />
             <h2 className="text-xs sm:text-sm font-bold text-[#1a1a2e]">Tournament Schedule</h2>
-          </motion.div>
+          </div>
           <div className="space-y-1.5">
             {SCHEDULE_PHASES.map((phase, i) => (
-              <motion.div key={phase.phase}
-                initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.9 + i * 0.05 }}
-                className="flex items-start gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl"
-                style={{ background: i === SCHEDULE_PHASES.length - 1 ? 'linear-gradient(135deg, rgba(232,163,23,0.08) 0%, rgba(232,163,23,0.02) 100%)' : '#ffffff', border: i === SCHEDULE_PHASES.length - 1 ? '1px solid rgba(232,163,23,0.15)' : '1px solid rgba(0,0,0,0.04)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+              <div key={phase.phase}
+                className={wc('wc-fade-left flex items-start gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl')}
+                style={{ background: i === SCHEDULE_PHASES.length - 1 ? 'linear-gradient(135deg, rgba(232,163,23,0.08) 0%, rgba(232,163,23,0.02) 100%)' : '#ffffff', border: i === SCHEDULE_PHASES.length - 1 ? '1px solid rgba(232,163,23,0.15)' : '1px solid rgba(0,0,0,0.04)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', transitionDelay: `${0.9 + i * 0.05}s` }}>
                 <div className="flex flex-col items-center pt-0.5">
                   <div className={`w-2.5 h-2.5 rounded-full ${i === SCHEDULE_PHASES.length - 1 ? 'bg-[#E8A317]' : 'bg-[#6C84E8]/30'}`} style={i === SCHEDULE_PHASES.length - 1 ? { boxShadow: '0 0 8px rgba(232,163,23,0.4)' } : {}} />
                   {i < SCHEDULE_PHASES.length - 1 && <div className="w-px h-6 mt-1" style={{ background: 'rgba(108,132,232,0.15)' }} />}
@@ -1101,26 +1099,26 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
                   <p className="text-[8px] sm:text-[9px] text-[#9ca3af] mt-0.5 leading-relaxed">{phase.desc}</p>
                 </div>
                 <span className="text-[9px] sm:text-[10px] font-bold px-2 py-1 rounded-lg flex-shrink-0" style={{ background: '#E8EDFF', color: '#6C84E8' }}>{phase.matches}</span>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
 
         {/* QUALIFYING CONFEDERATIONS */}
         <div className="px-3 sm:px-4 pt-5 sm:pt-6">
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.95 }}
-            className="flex items-center gap-2 mb-3">
+          <div className={wc('wc-fade-up flex items-center gap-2 mb-3')} style={{ transitionDelay: '0.95s' }}>
             <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#3090A8]" />
             <h2 className="text-xs sm:text-sm font-bold text-[#1a1a2e]">Qualifying Confederations</h2>
             <span className="text-[9px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-full ml-auto" style={{ background: '#E8EDFF', color: '#6C84E8' }}>48 slots</span>
-          </motion.div>
-          <div className="rounded-xl sm:rounded-2xl overflow-hidden p-3" style={{ background: '#ffffff', border: '1px solid rgba(0,0,0,0.04)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+          </div>
+          <div className="rounded-xl sm:rounded-2xl overflow-hidden p-3" style={{ ...WC_CARD_STYLE }}>
             <div className="space-y-2">
               {CONFEDERATIONS.map((conf, i) => (
                 <div key={conf.name} className="flex items-center gap-2">
                   <div className="w-full rounded-lg overflow-hidden h-2 sm:h-2.5" style={{ background: '#f0f2f5' }}>
-                    <motion.div initial={{ width: 0 }} animate={{ width: `${(conf.teams / 49) * 100}%` }} transition={{ duration: 0.8, delay: 1.0 + i * 0.1 }}
-                      className="h-full rounded-lg" style={{ background: conf.color }} />
+                    <div
+                      className="h-full rounded-lg wc-progress-bar"
+                      style={{ background: conf.color, width: mounted ? `${(conf.teams / 49) * 100}%` : '0%', transitionDelay: `${1.0 + i * 0.1}s` }} />
                   </div>
                   <span className="text-[9px] sm:text-[10px] font-bold text-[#1a1a2e] w-5 text-right flex-shrink-0">{conf.teams}</span>
                 </div>
@@ -1140,21 +1138,21 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
         {/* ALL SPORTS CHANNELS (from API) */}
         {mode === 'tv' && (
           <div className="px-3 sm:px-4 pt-5 sm:pt-6 pb-4">
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}
-              className="flex items-center justify-between mb-3">
+            <div className={wc('wc-fade-up flex items-center justify-between mb-3')} style={{ transitionDelay: '0.8s' }}>
               <div className="flex items-center gap-2">
                 <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#6C84E8]" />
                 <h2 className="text-xs sm:text-sm font-bold text-[#1a1a2e]">All Sports Channels</h2>
                 {totalChannels > 0 && <span className="text-[9px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: '#E8EDFF', color: '#6C84E8' }}>{totalChannels}</span>}
               </div>
-            </motion.div>
+            </div>
             {loading && (
               <div className="space-y-2">
                 {Array.from({ length: 4 }).map((_, i) => (
-                  <motion.div key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.1 }} className="h-14 sm:h-16 rounded-xl sm:rounded-2xl omni-shimmer" />
+                  <div key={i} className={wc('wc-fade h-14 sm:h-16 rounded-xl sm:rounded-2xl omni-shimmer')} style={{ transitionDelay: `${i * 0.1}s` }} />
                 ))}
               </div>
             )}
+            {/* Kept as AnimatePresence for exit animation */}
             <AnimatePresence>
               {!loading && featuredChannels.length > 0 && (
                 <div className="space-y-1.5 sm:space-y-2">
@@ -1192,7 +1190,7 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
 
         {/* BROADCAST INFO */}
         <div className="px-3 sm:px-4 pb-4 sm:pb-6">
-          <div className="rounded-xl sm:rounded-2xl overflow-hidden" style={{ background: '#ffffff', border: '1px solid rgba(0,0,0,0.04)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+          <div className="rounded-xl sm:rounded-2xl overflow-hidden" style={{ ...WC_CARD_STYLE }}>
             <div className="p-3 sm:p-4">
               <div className="flex items-center gap-2 mb-3">
                 <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#E8A317]" />
@@ -1218,18 +1216,18 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
 
         {/* BROWSE ALL BUTTON */}
         <div className="px-3 sm:px-4 pb-8 sm:pb-10">
-          <motion.button initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.0 }}
-            whileTap={{ scale: 0.97 }} onClick={onClose}
-            className="w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold text-white flex items-center justify-center gap-2 transition-all"
-            style={{ background: 'linear-gradient(135deg, #6C84E8 0%, #8B6CC4 100%)', boxShadow: '0 4px 16px rgba(108,132,232,0.3)' }}>
+          <button
+            onClick={onClose}
+            className={`omni-tap-scale ${wc('wc-fade-up')} w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold text-white flex items-center justify-center gap-2 transition-all`}
+            style={{ background: 'linear-gradient(135deg, #6C84E8 0%, #8B6CC4 100%)', boxShadow: '0 4px 16px rgba(108,132,232,0.3)', transitionDelay: '1.0s' }}>
             {mode === 'tv' ? <Tv className="w-4 h-4" /> : <Radio className="w-4 h-4" />}
             Browse All Channels
             <ChevronRight className="w-4 h-4" />
-          </motion.button>
+          </button>
         </div>
       </div>
 
-      {/* CSS KEYFRAMES FOR FLOATING ANIMATIONS */}
+      {/* CSS KEYFRAMES FOR FLOATING ANIMATIONS + ENTRY TRANSITIONS */}
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes omniTickerScroll {
           0% { transform: translateX(0); }
@@ -1247,7 +1245,56 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
           88% { opacity: 0.08; }
           100% { opacity: 0; }
         }
+        /* WorldCupSection — CSS entry transitions (replaces framer-motion) */
+        .wc-fade-up {
+          opacity: 0;
+          transform: translateY(12px);
+          transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .wc-fade-up.wc-entered {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        .wc-fade-up-lg {
+          opacity: 0;
+          transform: translateY(20px);
+          transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .wc-fade-up-lg.wc-entered {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        .wc-fade {
+          opacity: 0;
+          transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .wc-fade.wc-entered {
+          opacity: 1;
+        }
+        .wc-fade-scale {
+          opacity: 0;
+          transform: scale(0.95);
+          transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .wc-fade-scale.wc-entered {
+          opacity: 1;
+          transform: scale(1);
+        }
+        .wc-fade-left {
+          opacity: 0;
+          transform: translateX(-8px);
+          transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .wc-fade-left.wc-entered {
+          opacity: 1;
+          transform: translateX(0);
+        }
+        .wc-progress-bar {
+          transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
       ` }} />
     </div>
   );
 }
+
+export default React.memo(WorldCupSection);
