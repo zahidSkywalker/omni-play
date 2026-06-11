@@ -73,6 +73,9 @@ export default function Player({ channel, isFavorite, onToggleFavorite, onClose 
     setError(null);
 
     if (isEffectiveHLS && Hls.isSupported()) {
+      const allStreamUrls = channel.stream_urls?.length ? channel.stream_urls : [effectiveStreamUrl];
+      let currentUrlIndex = 0;
+
       const hls = new Hls({
         enableWorker: true,
         lowLatencyMode: false,
@@ -92,6 +95,10 @@ export default function Player({ channel, isFavorite, onToggleFavorite, onClose 
         manifestLoadingMaxRetry: 4,
         levelLoadingTimeOut: 15000,
         levelLoadingMaxRetry: 4,
+        xhrSetup: (xhr: XMLHttpRequest, url: string) => {
+          // Some CDNs check Referer/Origin — send minimal headers to avoid blocks
+          xhr.withCredentials = false;
+        },
       });
       hlsRef.current = hls;
 
@@ -110,7 +117,7 @@ export default function Player({ channel, isFavorite, onToggleFavorite, onClose 
       video.addEventListener('waiting', onWaiting);
       video.addEventListener('playing', onPlaying);
 
-      hls.loadSource(effectiveStreamUrl);
+      hls.loadSource(allStreamUrls[currentUrlIndex]);
       hls.attachMedia(video);
 
       hls.on(Hls.Events.MANIFEST_PARSED, (_event, data) => {
@@ -133,8 +140,12 @@ export default function Player({ channel, isFavorite, onToggleFavorite, onClose 
                 hls.destroy();
                 hlsRef.current = null;
                 setYtHlsUrl(null);
+              } else if (currentUrlIndex < allStreamUrls.length - 1) {
+                // Try next stream URL
+                currentUrlIndex++;
+                hls.loadSource(allStreamUrls[currentUrlIndex]);
               } else {
-                setError('Network error — stream unavailable');
+                setError('Network error — stream may be geo-blocked or offline');
                 hls.startLoad();
               }
               break;
@@ -149,7 +160,7 @@ export default function Player({ channel, isFavorite, onToggleFavorite, onClose 
                 hlsRef.current = null;
                 setYtHlsUrl(null);
               } else {
-                setError('Stream playback error');
+                setError('Stream playback error — try opening externally');
                 hls.destroy();
               }
               break;
