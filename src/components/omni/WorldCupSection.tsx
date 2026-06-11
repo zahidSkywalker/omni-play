@@ -251,6 +251,7 @@ const FOOTBALL_COMPS = [
     channels: [
       /* ── Bangladesh 🇧🇩 ── */
       { name: 'Somoy TV', country: 'bd', terms: ['somoy tv'] },
+      { name: 'FIFA WC Live', country: 'us', terms: [], url: 'https://www.youtube.com/live/74pv9qGIh1g' },
       { name: 'Real Madrid TV', country: 'es', terms: ['real madrid'] },
       { name: 'RTA Sport', country: 'af', terms: ['rta sport'] },
       /* ── India 🇮🇳 ── */
