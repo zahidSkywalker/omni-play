@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const MAX_MANIFEST_SIZE = 1 * 1024 * 1024; // 1MB
 const MAX_SEGMENT_SIZE = 15 * 1024 * 1024; // 15MB
-const TIMEOUT_MS = 20_000;
+const TIMEOUT_MS = 8_000;
 
 export async function GET(request: NextRequest) {
   const rawUrl = request.nextUrl.searchParams.get('url');

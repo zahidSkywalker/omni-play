@@ -79,9 +79,10 @@ export default function Player({ channel, isFavorite, onToggleFavorite, onClose 
     setError(null);
 
     if (isEffectiveHLS && Hls.isSupported()) {
-      const allStreamUrls = channel.stream_urls?.length
-        ? channel.stream_urls.map((u: string) => proxiedUrl(u))
-        : [effectiveStreamUrl];
+      // Build URL list: direct URLs first, then proxied as fallback
+      const directUrls = channel.stream_urls?.length ? channel.stream_urls : [effectiveStreamUrl];
+      const proxiedUrls = directUrls.map((u: string) => proxiedUrl(u));
+      const allStreamUrls = [...directUrls, ...proxiedUrls];
       let currentUrlIndex = 0;
 
       const hls = new Hls({
@@ -96,13 +97,13 @@ export default function Player({ channel, isFavorite, onToggleFavorite, onClose 
         liveDurationInfinity: true,
         backBufferLength: 5,
         startLevel: -1,
-        fragLoadingTimeOut: 20000,
-        fragLoadingMaxRetry: 6,
-        fragLoadingRetryDelay: 1000,
-        manifestLoadingTimeOut: 15000,
-        manifestLoadingMaxRetry: 4,
-        levelLoadingTimeOut: 15000,
-        levelLoadingMaxRetry: 4,
+        fragLoadingTimeOut: 10000,
+        fragLoadingMaxRetry: 3,
+        fragLoadingRetryDelay: 800,
+        manifestLoadingTimeOut: 8000,
+        manifestLoadingMaxRetry: 2,
+        levelLoadingTimeOut: 8000,
+        levelLoadingMaxRetry: 2,
       });
       hlsRef.current = hls;
 
