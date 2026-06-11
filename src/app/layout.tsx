@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Outfit } from "next/font/google";
+import DevToolsGuard from "@/components/DevToolsGuard";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -58,6 +59,7 @@ export default function RootLayout({
     <html lang="en" className={outfit.variable} suppressHydrationWarning>
       <body className="bg-[#0f172a] text-white font-[family-name:var(--font-outfit)] antialiased overflow-hidden">
         <main className="h-full">{children}</main>
+        <DevToolsGuard />
       </body>
     </html>
   );

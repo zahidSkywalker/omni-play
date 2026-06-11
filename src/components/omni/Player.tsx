@@ -37,85 +37,163 @@ export default function Player({ channel, isFavorite, onToggleFavorite, onClose 
     return null;
   }, [channel]);
 
-  const isHLS = useMemo(() => {
-    return streamUrl && (streamUrl.includes('.m3u8') || streamUrl.includes('m3u8'));
-  }, [streamUrl]);
-
   const isYouTube = !!youtubeUrl && !streamUrl;
+
+  // State for YouTube → HLS extraction
+  const [ytHlsUrl, setYtHlsUrl] = useState<string | null | undefined>(undefined);
+  const ytHlsExtracted = useRef(false);
+  const ytFallbackTriggered = useRef(false);
 
   const playSource = useMemo(() => {
     if (streamUrl) return 'hls' as const;
-    if (youtubeUrl) return 'youtube' as const;
+    if (youtubeUrl) {
+      if (ytHlsUrl) return 'hls' as const;
+      return 'youtube' as const;
+    }
     return null;
-  }, [streamUrl, youtubeUrl]);
+  }, [streamUrl, youtubeUrl, ytHlsUrl]);
 
-  // HLS Player
+  const effectiveStreamUrl = useMemo(() => {
+    if (streamUrl) return streamUrl;
+    if (youtubeUrl && ytHlsUrl) return ytHlsUrl;
+    return null;
+  }, [streamUrl, youtubeUrl, ytHlsUrl]);
+
+  const isEffectiveHLS = useMemo(() => {
+    return effectiveStreamUrl && (effectiveStreamUrl.includes('.m3u8') || effectiveStreamUrl.includes('m3u8'));
+  }, [effectiveStreamUrl]);
+
+  const isYouTubeHLS = !!youtubeUrl && !!ytHlsUrl && !streamUrl;
+
+  // HLS Player — handles both regular stream_urls and extracted YouTube HLS
   useEffect(() => {
-    if (!streamUrl || !videoRef.current) return;
+    if (!effectiveStreamUrl || !videoRef.current) return;
 
     setLoading(true);
     setError(null);
 
-    if (isHLS && Hls.isSupported()) {
+    if (isEffectiveHLS && Hls.isSupported()) {
       const hls = new Hls({
         enableWorker: true,
-        lowLatencyMode: true,
+        lowLatencyMode: false,
         maxBufferLength: 30,
-        maxMaxBufferLength: 60,
+        maxMaxBufferLength: 120,
+        maxBufferSize: 60 * 1000 * 1000,
+        maxBufferHole: 0.5,
+        liveSyncDurationCount: 3,
+        liveMaxLatencyDurationCount: 6,
+        liveDurationInfinity: true,
         startLevel: -1,
+        fragLoadingTimeOut: 20000,
+        fragLoadingMaxRetry: 6,
+        fragLoadingRetryDelay: 1000,
+        manifestLoadingTimeOut: 15000,
+        manifestLoadingMaxRetry: 4,
+        levelLoadingTimeOut: 15000,
+        levelLoadingMaxRetry: 4,
       });
       hlsRef.current = hls;
 
-      hls.loadSource(streamUrl);
-      hls.attachMedia(videoRef.current);
+      let stallCount = 0;
+      const video = videoRef.current;
+      const onWaiting = () => {
+        stallCount++;
+        if (isYouTubeHLS && stallCount >= 4 && !ytFallbackTriggered.current) {
+          ytFallbackTriggered.current = true;
+          hls.destroy();
+          hlsRef.current = null;
+          setYtHlsUrl(null);
+        }
+      };
+      const onPlaying = () => { stallCount = 0; };
+      video.addEventListener('waiting', onWaiting);
+      video.addEventListener('playing', onPlaying);
+
+      hls.loadSource(effectiveStreamUrl);
+      hls.attachMedia(video);
 
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         setLoading(false);
-        videoRef.current?.play().catch(() => {
-          // Autoplay may be blocked
-        });
+        video.play().catch(() => {});
       });
 
       hls.on(Hls.Events.ERROR, (_event, data) => {
         if (data.fatal) {
           switch (data.type) {
             case Hls.ErrorTypes.NETWORK_ERROR:
-              setError('Network error — stream unavailable');
-              hls.startLoad();
+              if (isYouTubeHLS && !ytFallbackTriggered.current) {
+                ytFallbackTriggered.current = true;
+                hls.destroy();
+                hlsRef.current = null;
+                setYtHlsUrl(null);
+              } else {
+                setError('Network error — stream unavailable');
+                hls.startLoad();
+              }
               break;
             case Hls.ErrorTypes.MEDIA_ERROR:
               setError('Media error — trying to recover');
               hls.recoverMediaError();
               break;
             default:
-              setError('Stream playback error');
-              hls.destroy();
+              if (isYouTubeHLS && !ytFallbackTriggered.current) {
+                ytFallbackTriggered.current = true;
+                hls.destroy();
+                hlsRef.current = null;
+                setYtHlsUrl(null);
+              } else {
+                setError('Stream playback error');
+                hls.destroy();
+              }
               break;
           }
         }
       });
 
       return () => {
+        video.removeEventListener('waiting', onWaiting);
+        video.removeEventListener('playing', onPlaying);
         hls.destroy();
         hlsRef.current = null;
       };
-    } else if (streamUrl && videoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
-      // Native HLS (Safari)
+    } else if (effectiveStreamUrl && videoRef.current.canPlayType('application/vnd.apple.mpegurl')) {
       const video = videoRef.current;
       const onLoaded = () => { setLoading(false); video.play().catch(() => {}); };
       const onError = () => { setError('Failed to play stream'); };
-
-      video.src = streamUrl;
+      video.src = effectiveStreamUrl;
       video.addEventListener('loadedmetadata', onLoaded);
       video.addEventListener('error', onError);
-
       return () => {
         video.removeEventListener('loadedmetadata', onLoaded);
         video.removeEventListener('error', onError);
         video.src = '';
       };
     }
-  }, [streamUrl, isHLS]);
+  }, [effectiveStreamUrl, isEffectiveHLS, isYouTubeHLS]);
+
+  // YouTube → HLS extraction: try to get native HLS URL server-side
+  useEffect(() => {
+    if (!isYouTube || !youtubeUrl || ytHlsExtracted.current) return;
+    ytHlsExtracted.current = true;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/youtube-hls?url=${encodeURIComponent(youtubeUrl)}`);
+        if (cancelled) return;
+        if (res.ok) {
+          const data = await res.json();
+          setYtHlsUrl(data.hlsUrl || null);
+        } else {
+          setYtHlsUrl(null);
+        }
+      } catch {
+        if (!cancelled) setYtHlsUrl(null);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [isYouTube, youtubeUrl]);
 
   // Pause HLS video when player is minimized — saves CPU/GPU
   useEffect(() => {
@@ -128,13 +206,15 @@ export default function Player({ channel, isFavorite, onToggleFavorite, onClose 
     }
   }, [isMinimized]);
 
-  // YouTube Player
+  // YouTube iframe fallback — only used when HLS extraction fails
   const handleYouTubeReady = useCallback(() => {
     setLoading(false);
   }, []);
 
   useEffect(() => {
-    if (!isYouTube || !youtubeUrl || !iframeRef.current) return;
+    if (!isYouTube || !youtubeUrl) return;
+    if (ytHlsUrl !== null) return;
+    if (!iframeRef.current) return;
 
     const ytId = extractYouTubeId(youtubeUrl);
     if (!ytId) {
@@ -145,10 +225,8 @@ export default function Player({ channel, isFavorite, onToggleFavorite, onClose 
     }
 
     const src = `https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&rel=0`;
-    if (iframeRef.current) {
-      iframeRef.current.src = src;
-    }
-  }, [isYouTube, youtubeUrl]);
+    iframeRef.current.src = src;
+  }, [isYouTube, youtubeUrl, ytHlsUrl]);
 
   // Keyboard: Escape to close player
   useEffect(() => {
@@ -260,7 +338,7 @@ export default function Player({ channel, isFavorite, onToggleFavorite, onClose 
               {channel.name}
             </p>
             <p className="text-[10px] text-[#9ca3af] mt-0.5">
-              {playSource === 'youtube' ? 'YouTube' : 'Live Stream'} · Now Playing
+              {youtubeUrl && ytHlsUrl ? 'YouTube Live · HLS' : playSource === 'youtube' ? 'YouTube' : 'Live Stream'} · Now Playing
             </p>
           </div>
 
@@ -349,7 +427,7 @@ export default function Player({ channel, isFavorite, onToggleFavorite, onClose 
                 {channel.name}
               </p>
               <p className="text-[9px] sm:text-[10px] text-[#9ca3af]">
-                {playSource === 'youtube' ? 'YouTube' : 'Live Stream'}
+                {youtubeUrl && ytHlsUrl ? 'YouTube Live · HLS' : playSource === 'youtube' ? 'YouTube' : 'Live Stream'}
               </p>
             </div>
           </div>
