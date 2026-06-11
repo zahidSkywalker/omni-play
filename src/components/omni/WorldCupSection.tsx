@@ -453,6 +453,7 @@ const TICKER_MATCHES = [
 export default function WorldCupSection({ mode, onChannelSelect, onClose }: WorldCupSectionProps) {
   const [now, setNow] = useState(Date.now());
   const [sportsChannels, setSportsChannels] = useState<Channel[]>([]);
+  const [bdChannels, setBdChannels] = useState<Channel[]>([]);
   const [loading, setLoading] = useState(false);
   const [featuredChannels, setFeaturedChannels] = useState<Channel[]>([]);
   const [activeHostTab, setActiveHostTab] = useState(0);
@@ -527,9 +528,12 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
     async function fetchSports() {
       setLoading(true);
       try {
-        const res = await fetch('/api/famelack?type=tv&view=category&id=sports');
-        if (res.ok && !cancelled) {
-          const data = await res.json();
+        const [sportsRes, bdRes] = await Promise.all([
+          fetch('/api/famelack?type=tv&view=category&id=sports'),
+          fetch('/api/famelack?type=tv&view=country&id=bd'),
+        ]);
+        if (sportsRes.ok && !cancelled) {
+          const data = await sportsRes.json();
           const channels: Channel[] = Array.isArray(data) ? data : [];
           setSportsChannels(channels);
           const scored = channels.map(ch => {
@@ -543,6 +547,10 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
           });
           scored.sort((a, b) => b.score - a.score);
           setFeaturedChannels(scored.slice(0, 12).map(s => s.channel));
+        }
+        if (bdRes.ok && !cancelled) {
+          const bdData = await bdRes.json();
+          setBdChannels(Array.isArray(bdData) ? bdData : []);
         }
       } catch { /* empty */ } finally {
         if (!cancelled) setLoading(false);
@@ -578,12 +586,13 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
   const totalChannels = useMemo(() => sportsChannels.length, [sportsChannels]);
 
   const getMatchedChannel = useCallback((terms: string[]): Channel | null => {
+    const allChannels = [...sportsChannels, ...bdChannels];
     for (const term of terms) {
-      const m = sportsChannels.find(c => c.name.toLowerCase().includes(term));
+      const m = allChannels.find(c => c.name.toLowerCase().includes(term));
       if (m) return m;
     }
     return null;
-  }, [sportsChannels]);
+  }, [sportsChannels, bdChannels]);
 
   /* Competition-aware channel finder for ticker matches */
   const getChannelForComp = useCallback((comp: string): Channel | null => {
