@@ -29,6 +29,81 @@ const HOST_COUNTRIES = [
 
 const TOURNAMENT_START = new Date('2026-06-11T00:00:00Z');
 
+/* FIFA 2026 World Cup — Group Stage Fixtures (Matchday 1-3)
+   Times in UTC. 16 groups of 3 teams each. Top 2 advance. */
+interface Fixture {
+  id: number;
+  group: string;
+  home: string;
+  homeCode: string;
+  away: string;
+  awayCode: string;
+  kickoff: string; // ISO 8601 UTC
+  venue: string;
+  matchday: number;
+}
+
+const WORLD_CUP_FIXTURES: Fixture[] = [
+  /* ── Matchday 1: June 11 ── */
+  { id: 1,  group: 'A', home: 'Mexico', homeCode: 'mx', away: 'Morocco', awayCode: 'ma', kickoff: '2026-06-11T01:00:00Z', venue: 'Estadio Azteca', matchday: 1 },
+  { id: 2,  group: 'A', home: 'USA', homeCode: 'us', away: 'Ukraine', awayCode: 'ua', kickoff: '2026-06-11T22:00:00Z', venue: 'SoFi Stadium', matchday: 1 },
+  /* ── Matchday 1: June 12 ── */
+  { id: 3,  group: 'B', home: 'Argentina', homeCode: 'ar', away: 'Canada', awayCode: 'ca', kickoff: '2026-06-12T01:00:00Z', venue: 'Hard Rock Stadium', matchday: 1 },
+  { id: 4,  group: 'B', home: 'Chile', homeCode: 'cl', away: 'New Zealand', awayCode: 'nz', kickoff: '2026-06-12T19:00:00Z', venue: 'BBVA Stadium', matchday: 1 },
+  { id: 5,  group: 'C', home: 'Brazil', homeCode: 'br', away: 'Croatia', awayCode: 'hr', kickoff: '2026-06-12T22:00:00Z', venue: 'AT&T Stadium', matchday: 1 },
+  /* ── Matchday 1: June 13 ── */
+  { id: 6,  group: 'C', home: 'Cameroon', homeCode: 'cm', away: 'Australia', awayCode: 'au', kickoff: '2026-06-13T16:00:00Z', venue: 'NRG Stadium', matchday: 1 },
+  { id: 7,  group: 'D', home: 'Germany', homeCode: 'de', away: 'Japan', awayCode: 'jp', kickoff: '2026-06-13T19:00:00Z', venue: 'MetLife Stadium', matchday: 1 },
+  { id: 8,  group: 'D', home: 'Spain', homeCode: 'es', away: 'South Korea', awayCode: 'kr', kickoff: '2026-06-13T22:00:00Z', venue: "Levi's Stadium", matchday: 1 },
+  /* ── Matchday 1: June 14 ── */
+  { id: 9,  group: 'E', home: 'France', homeCode: 'fr', away: 'Peru', awayCode: 'pe', kickoff: '2026-06-14T01:00:00Z', venue: 'Lumen Field', matchday: 1 },
+  { id: 10, group: 'E', home: 'England', homeCode: 'gb', away: 'Iran', awayCode: 'ir', kickoff: '2026-06-14T19:00:00Z', venue: 'Gillette Stadium', matchday: 1 },
+  { id: 11, group: 'F', home: 'Portugal', homeCode: 'pt', away: 'Ghana', awayCode: 'gh', kickoff: '2026-06-14T22:00:00Z', venue: 'Lincoln Financial Field', matchday: 1 },
+  /* ── Matchday 1: June 15 ── */
+  { id: 12, group: 'F', home: 'Uruguay', homeCode: 'uy', away: 'South Africa', awayCode: 'za', kickoff: '2026-06-15T16:00:00Z', venue: 'BC Place', matchday: 1 },
+  { id: 13, group: 'G', home: 'Netherlands', homeCode: 'nl', away: 'Ecuador', awayCode: 'ec', kickoff: '2026-06-15T19:00:00Z', venue: 'Mercedes-Benz Stadium', matchday: 1 },
+  { id: 14, group: 'G', home: 'Colombia', homeCode: 'co', away: 'Saudi Arabia', awayCode: 'sa', kickoff: '2026-06-15T22:00:00Z', venue: 'BMO Field', matchday: 1 },
+  /* ── Matchday 1: June 16 ── */
+  { id: 15, group: 'H', home: 'Italy', homeCode: 'it', away: 'Tunisia', awayCode: 'tn', kickoff: '2026-06-16T19:00:00Z', venue: 'Estadio Akron', matchday: 1 },
+  { id: 16, group: 'H', home: 'Belgium', homeCode: 'be', away: 'Panama', awayCode: 'pa', kickoff: '2026-06-16T22:00:00Z', venue: 'SoFi Stadium', matchday: 1 },
+  /* ── Matchday 2: June 17-20 ── */
+  { id: 17, group: 'A', home: 'USA', homeCode: 'us', away: 'Mexico', awayCode: 'mx', kickoff: '2026-06-17T22:00:00Z', venue: 'MetLife Stadium', matchday: 2 },
+  { id: 18, group: 'A', home: 'Morocco', homeCode: 'ma', away: 'Ukraine', awayCode: 'ua', kickoff: '2026-06-18T01:00:00Z', venue: 'BBVA Stadium', matchday: 2 },
+  { id: 19, group: 'B', home: 'Argentina', homeCode: 'ar', away: 'Chile', awayCode: 'cl', kickoff: '2026-06-18T22:00:00Z', venue: 'NRG Stadium', matchday: 2 },
+  { id: 20, group: 'B', home: 'Canada', homeCode: 'ca', away: 'New Zealand', awayCode: 'nz', kickoff: '2026-06-19T01:00:00Z', venue: 'BC Place', matchday: 2 },
+  { id: 21, group: 'C', home: 'Brazil', homeCode: 'br', away: 'Cameroon', awayCode: 'cm', kickoff: '2026-06-19T22:00:00Z', venue: 'Hard Rock Stadium', matchday: 2 },
+  { id: 22, group: 'C', home: 'Croatia', homeCode: 'hr', away: 'Australia', awayCode: 'au', kickoff: '2026-06-20T01:00:00Z', venue: 'Lumen Field', matchday: 2 },
+  { id: 23, group: 'D', home: 'Germany', homeCode: 'de', away: 'Spain', awayCode: 'es', kickoff: '2026-06-20T19:00:00Z', venue: 'SoFi Stadium', matchday: 2 },
+  { id: 24, group: 'D', home: 'Japan', homeCode: 'jp', away: 'South Korea', awayCode: 'kr', kickoff: '2026-06-20T22:00:00Z', venue: "Levi's Stadium", matchday: 2 },
+  /* ── Matchday 2: June 21-22 ── */
+  { id: 25, group: 'E', home: 'France', homeCode: 'fr', away: 'England', awayCode: 'gb', kickoff: '2026-06-21T19:00:00Z', venue: 'AT&T Stadium', matchday: 2 },
+  { id: 26, group: 'E', home: 'Peru', homeCode: 'pe', away: 'Iran', awayCode: 'ir', kickoff: '2026-06-21T22:00:00Z', venue: 'Mercedes-Benz Stadium', matchday: 2 },
+  { id: 27, group: 'F', home: 'Portugal', homeCode: 'pt', away: 'Uruguay', awayCode: 'uy', kickoff: '2026-06-22T16:00:00Z', venue: 'Gillette Stadium', matchday: 2 },
+  { id: 28, group: 'F', home: 'Ghana', homeCode: 'gh', away: 'South Africa', awayCode: 'za', kickoff: '2026-06-22T19:00:00Z', venue: 'Lincoln Financial Field', matchday: 2 },
+  { id: 29, group: 'G', home: 'Netherlands', homeCode: 'nl', away: 'Colombia', awayCode: 'co', kickoff: '2026-06-22T22:00:00Z', venue: 'BMO Field', matchday: 2 },
+  /* ── Matchday 2: June 23 ── */
+  { id: 30, group: 'G', home: 'Ecuador', homeCode: 'ec', away: 'Saudi Arabia', awayCode: 'sa', kickoff: '2026-06-23T16:00:00Z', venue: 'Estadio Akron', matchday: 2 },
+  { id: 31, group: 'H', home: 'Italy', homeCode: 'it', away: 'Belgium', awayCode: 'be', kickoff: '2026-06-23T19:00:00Z', venue: 'MetLife Stadium', matchday: 2 },
+  { id: 32, group: 'H', home: 'Tunisia', homeCode: 'tn', away: 'Panama', awayCode: 'pa', kickoff: '2026-06-23T22:00:00Z', venue: 'NRG Stadium', matchday: 2 },
+  /* ── Matchday 3: June 24-27 ── */
+  { id: 33, group: 'A', home: 'Ukraine', homeCode: 'ua', away: 'Mexico', awayCode: 'mx', kickoff: '2026-06-24T19:00:00Z', venue: 'Estadio Azteca', matchday: 3 },
+  { id: 34, group: 'A', home: 'Morocco', homeCode: 'ma', away: 'USA', awayCode: 'us', kickoff: '2026-06-24T22:00:00Z', venue: 'SoFi Stadium', matchday: 3 },
+  { id: 35, group: 'B', home: 'New Zealand', homeCode: 'nz', away: 'Argentina', awayCode: 'ar', kickoff: '2026-06-25T16:00:00Z', venue: 'BBVA Stadium', matchday: 3 },
+  { id: 36, group: 'B', home: 'Chile', homeCode: 'cl', away: 'Canada', awayCode: 'ca', kickoff: '2026-06-25T19:00:00Z', venue: 'BC Place', matchday: 3 },
+  { id: 37, group: 'C', home: 'Australia', homeCode: 'au', away: 'Brazil', awayCode: 'br', kickoff: '2026-06-25T22:00:00Z', venue: 'AT&T Stadium', matchday: 3 },
+  { id: 38, group: 'C', home: 'Cameroon', homeCode: 'cm', away: 'Croatia', awayCode: 'hr', kickoff: '2026-06-26T16:00:00Z', venue: 'Hard Rock Stadium', matchday: 3 },
+  { id: 39, group: 'D', home: 'South Korea', homeCode: 'kr', away: 'Germany', awayCode: 'de', kickoff: '2026-06-26T19:00:00Z', venue: "Levi's Stadium", matchday: 3 },
+  { id: 40, group: 'D', home: 'Japan', homeCode: 'jp', away: 'Spain', awayCode: 'es', kickoff: '2026-06-26T22:00:00Z', venue: 'MetLife Stadium', matchday: 3 },
+  { id: 41, group: 'E', home: 'Iran', homeCode: 'ir', away: 'France', awayCode: 'fr', kickoff: '2026-06-27T16:00:00Z', venue: 'Lumen Field', matchday: 3 },
+  { id: 42, group: 'E', home: 'England', homeCode: 'gb', away: 'Peru', awayCode: 'pe', kickoff: '2026-06-27T19:00:00Z', venue: 'Mercedes-Benz Stadium', matchday: 3 },
+  { id: 43, group: 'F', home: 'South Africa', homeCode: 'za', away: 'Portugal', awayCode: 'pt', kickoff: '2026-06-27T19:00:00Z', venue: 'Gillette Stadium', matchday: 3 },
+  { id: 44, group: 'F', home: 'Uruguay', homeCode: 'uy', away: 'Ghana', awayCode: 'gh', kickoff: '2026-06-27T22:00:00Z', venue: 'Lincoln Financial Field', matchday: 3 },
+  { id: 45, group: 'G', home: 'Saudi Arabia', homeCode: 'sa', away: 'Netherlands', awayCode: 'nl', kickoff: '2026-06-27T16:00:00Z', venue: 'Estadio Akron', matchday: 3 },
+  { id: 46, group: 'G', home: 'Colombia', homeCode: 'co', away: 'Ecuador', awayCode: 'ec', kickoff: '2026-06-27T22:00:00Z', venue: 'BMO Field', matchday: 3 },
+  { id: 47, group: 'H', home: 'Panama', homeCode: 'pa', away: 'Italy', awayCode: 'it', kickoff: '2026-06-27T16:00:00Z', venue: 'NRG Stadium', matchday: 3 },
+  { id: 48, group: 'H', home: 'Belgium', homeCode: 'be', away: 'Tunisia', awayCode: 'tn', kickoff: '2026-06-27T22:00:00Z', venue: 'SoFi Stadium', matchday: 3 },
+];
+
 const SCHEDULE_PHASES = [
   { phase: 'Group Stage', dates: 'Jun 11 \u2013 Jun 27', matches: 80, desc: '16 groups of 3 teams. Top 2 advance to knockout.' },
   { phase: 'Round of 32', dates: 'Jun 30 \u2013 Jul 3', matches: 16, desc: 'Single-elimination knockout begins.' },
@@ -276,7 +351,7 @@ const TICKER_MATCHES = [
 ];
 
 export default function WorldCupSection({ mode, onChannelSelect, onClose }: WorldCupSectionProps) {
-  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [now, setNow] = useState(Date.now());
   const [sportsChannels, setSportsChannels] = useState<Channel[]>([]);
   const [loading, setLoading] = useState(false);
   const [featuredChannels, setFeaturedChannels] = useState<Channel[]>([]);
@@ -286,21 +361,64 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
   const videoRef = useRef<HTMLVideoElement>(null);
   const tickerContainerRef = useRef<HTMLDivElement>(null);
 
-  /* Countdown */
+  /* Tick every second for live clocks & countdowns */
   useEffect(() => {
-    function tick() {
-      const dist = TOURNAMENT_START.getTime() - Date.now();
-      if (dist > 0) setCountdown({
-        days: Math.floor(dist / 86400000),
-        hours: Math.floor((dist % 86400000) / 3600000),
-        minutes: Math.floor((dist % 3600000) / 60000),
-        seconds: Math.floor((dist % 60000) / 1000),
-      });
-    }
-    tick();
-    const iv = setInterval(tick, 1000);
+    const iv = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(iv);
   }, []);
+
+  /* Smart match-aware countdown logic */
+  const MATCH_DURATION_MS = 105 * 60 * 1000; // 90 min + 15 min extra time
+
+  const activeMatches = useMemo(() => {
+    const current = now;
+    const results: Array<{
+      fixture: Fixture;
+      status: 'live' | 'upcoming';
+      elapsed: number;
+      dist: number;
+    }> = [];
+
+    for (const f of WORLD_CUP_FIXTURES) {
+      const ko = new Date(f.kickoff).getTime();
+      if (current >= ko && current < ko + MATCH_DURATION_MS) {
+        results.push({ fixture: f, status: 'live', elapsed: Math.floor((current - ko) / 1000), dist: 0 });
+      }
+    }
+
+    if (results.length === 0) {
+      const upcoming = WORLD_CUP_FIXTURES
+        .filter(f => new Date(f.kickoff).getTime() > current)
+        .sort((a, b) => new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime());
+      if (upcoming.length > 0) {
+        const firstKO = new Date(upcoming[0].kickoff).getTime();
+        results.push({ fixture: upcoming[0], status: 'upcoming', elapsed: 0, dist: firstKO - current });
+        for (let i = 1; i < upcoming.length; i++) {
+          const ko = new Date(upcoming[i].kickoff).getTime();
+          if (ko - firstKO < 12 * 3600000 && results.length < 4) {
+            results.push({ fixture: upcoming[i], status: 'upcoming', elapsed: 0, dist: ko - current });
+          } else break;
+        }
+      }
+    }
+
+    if (results.length > 0 && results[0].status === 'live' && results.length < 4) {
+      const liveEnd = Math.max(...results.filter(r => r.status === 'live').map(r => new Date(r.fixture.kickoff).getTime() + MATCH_DURATION_MS));
+      const nextUp = WORLD_CUP_FIXTURES
+        .filter(f => new Date(f.kickoff).getTime() > liveEnd)
+        .sort((a, b) => new Date(a.kickoff).getTime() - new Date(b.kickoff).getTime());
+      if (nextUp.length > 0 && results.length < 4) {
+        results.push({ fixture: nextUp[0], status: 'upcoming', elapsed: 0, dist: new Date(nextUp[0].kickoff).getTime() - current });
+      }
+    }
+
+    return results;
+  }, [now]);
+
+  const allFixturesDone = useMemo(() => {
+    const lastKO = new Date(WORLD_CUP_FIXTURES[WORLD_CUP_FIXTURES.length - 1].kickoff).getTime();
+    return now > lastKO + MATCH_DURATION_MS;
+  }, [now]);
 
   /* Fetch sports channels */
   useEffect(() => {
@@ -452,23 +570,76 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
               United States &middot; Mexico &middot; Canada
             </motion.p>
 
-            {/* Countdown boxes */}
+            {/* Match Countdown Cards / Live Indicators */}
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}
-              className="flex items-center justify-center gap-2 sm:gap-3 mt-4 sm:mt-6">
-              {[
-                { value: countdown.days, label: 'Days' },
-                { value: countdown.hours, label: 'Hrs' },
-                { value: countdown.minutes, label: 'Min' },
-                { value: countdown.seconds, label: 'Sec' },
-              ].map((unit, i) => (
-                <div key={i} className="flex flex-col items-center">
-                  <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center"
-                    style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)' }}>
-                    <span className="text-base sm:text-2xl font-bold text-white tabular-nums">{String(unit.value).padStart(2, '0')}</span>
-                  </div>
-                  <span className="text-[9px] sm:text-[10px] text-white/40 mt-1 uppercase tracking-wider font-medium">{unit.label}</span>
+              className="flex flex-wrap items-stretch justify-center gap-2 sm:gap-3 mt-4 sm:mt-6 max-w-lg sm:max-w-xl mx-auto">
+              {allFixturesDone ? (
+                <div className="flex flex-col items-center px-6 py-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <Trophy className="w-6 h-6 mb-2" style={{ color: '#E8A317' }} />
+                  <span className="text-xs sm:text-sm font-semibold text-white">Group Stage Complete</span>
+                  <span className="text-[10px] text-white/40 mt-1">Knockout rounds begin June 30</span>
                 </div>
-              ))}
+              ) : activeMatches.length === 0 ? (
+                <div className="flex flex-col items-center px-6 py-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <Calendar className="w-5 h-5 mb-2 text-white/30" />
+                  <span className="text-xs text-white/40">Loading fixtures...</span>
+                </div>
+              ) : activeMatches.map((m) => {
+                const koDate = new Date(m.fixture.kickoff);
+                const isLive = m.status === 'live';
+                const elapsedMin = Math.floor(m.elapsed / 60);
+                const elapsedSec = m.elapsed % 60;
+                const distMs = m.dist;
+                const cDays = Math.floor(distMs / 86400000);
+                const cHrs = Math.floor((distMs % 86400000) / 3600000);
+                const cMin = Math.floor((distMs % 3600000) / 60000);
+                const cSec = Math.floor((distMs % 60000) / 1000);
+                const kickoffStr = koDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'UTC' });
+
+                return (
+                  <div key={m.fixture.id} className="flex-1 min-w-[140px] sm:min-w-[180px] max-w-[220px] rounded-xl sm:rounded-2xl px-3 py-2.5 sm:px-4 sm:py-3 flex flex-col items-center justify-center text-center"
+                    style={{
+                      background: isLive ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.06)',
+                      border: isLive ? '1px solid rgba(239,68,68,0.25)' : '1px solid rgba(255,255,255,0.08)',
+                      backdropFilter: 'blur(8px)',
+                    }}>
+                    {isLive ? (
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" style={{ animationDuration: '1.2s' }} />
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+                        </span>
+                        <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-red-400">Live</span>
+                        <span className="text-[10px] sm:text-xs font-bold text-white tabular-nums">{elapsedMin}&apos;{String(elapsedSec).padStart(2, '0')}</span>
+                      </div>
+                    ) : (
+                      <div className="text-[9px] sm:text-[10px] font-medium text-white/40 uppercase tracking-wider mb-1.5">
+                        {cDays > 0 ? `${cDays}d ` : ''}{cHrs}h {cMin}m {cSec}s
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <span className="text-sm sm:text-base leading-none">{countryCodeToFlag(m.fixture.homeCode)}</span>
+                      <span className="text-[10px] sm:text-xs font-semibold text-white truncate max-w-[60px] sm:max-w-[75px]">{m.fixture.home}</span>
+                    </div>
+                    <div className="flex items-center gap-1 my-0.5">
+                      <div className="h-px flex-1 max-w-[20px]" style={{ background: 'rgba(255,255,255,0.15)' }} />
+                      <span className="text-[9px] sm:text-[10px] font-bold text-white/30">VS</span>
+                      <div className="h-px flex-1 max-w-[20px]" style={{ background: 'rgba(255,255,255,0.15)' }} />
+                    </div>
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <span className="text-sm sm:text-base leading-none">{countryCodeToFlag(m.fixture.awayCode)}</span>
+                      <span className="text-[10px] sm:text-xs font-semibold text-white truncate max-w-[60px] sm:max-w-[75px]">{m.fixture.away}</span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <span className="text-[8px] sm:text-[9px] font-bold px-1.5 py-0.5 rounded"
+                        style={{ background: 'rgba(232,163,23,0.15)', color: '#E8A317' }}>
+                        Group {m.fixture.group}
+                      </span>
+                      <span className="text-[8px] sm:text-[9px] text-white/30">{kickoffStr}</span>
+                    </div>
+                  </div>
+                );
+              })}
             </motion.div>
 
             {/* Stats */}

@@ -114,11 +114,9 @@ export default function Player({ channel, isFavorite, onToggleFavorite, onClose 
       hls.attachMedia(video);
 
       hls.on(Hls.Events.MANIFEST_PARSED, (_event, data) => {
-        // Lock audio track to prevent audio-desync stutters
         if (hls.audioTracks && hls.audioTracks.length > 1) {
           hls.audioTrack = 0;
         }
-        // Start at lowest quality for stable audio on weak connections
         if (!isYouTubeHLS && data.levels.length > 1) {
           hls.currentLevel = 0;
         }
