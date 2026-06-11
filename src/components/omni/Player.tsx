@@ -76,13 +76,14 @@ export default function Player({ channel, isFavorite, onToggleFavorite, onClose 
       const hls = new Hls({
         enableWorker: true,
         lowLatencyMode: false,
-        maxBufferLength: 30,
-        maxMaxBufferLength: 120,
-        maxBufferSize: 60 * 1000 * 1000,
-        maxBufferHole: 0.5,
-        liveSyncDurationCount: 3,
-        liveMaxLatencyDurationCount: 6,
+        maxBufferLength: 10,
+        maxMaxBufferLength: 30,
+        maxBufferSize: 30 * 1000 * 1000,
+        maxBufferHole: 0.3,
+        liveSyncDurationCount: 1,
+        liveMaxLatencyDurationCount: 3,
         liveDurationInfinity: true,
+        backBufferLength: 5,
         startLevel: -1,
         fragLoadingTimeOut: 20000,
         fragLoadingMaxRetry: 6,
@@ -112,7 +113,15 @@ export default function Player({ channel, isFavorite, onToggleFavorite, onClose 
       hls.loadSource(effectiveStreamUrl);
       hls.attachMedia(video);
 
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+      hls.on(Hls.Events.MANIFEST_PARSED, (_event, data) => {
+        // Lock audio track to prevent audio-desync stutters
+        if (hls.audioTracks && hls.audioTracks.length > 1) {
+          hls.audioTrack = 0;
+        }
+        // Start at lowest quality for stable audio on weak connections
+        if (!isYouTubeHLS && data.levels.length > 1) {
+          hls.currentLevel = 0;
+        }
         setLoading(false);
         video.play().catch(() => {});
       });
