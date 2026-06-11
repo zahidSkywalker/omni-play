@@ -23,6 +23,12 @@ export default function Player({ channel, isFavorite, onToggleFavorite, onClose 
   const [error, setError] = useState<string | null>(null);
   const [isMinimized, setIsMinimized] = useState(false);
 
+  // Build proxy URL for streams that may be geo/embed blocked
+  const proxiedUrl = useCallback((url: string) => {
+    if (typeof window === 'undefined') return url;
+    return `${window.location.origin}/api/stream-proxy?url=${encodeURIComponent(url)}`;
+  }, []);
+
   const streamUrl = useMemo(() => {
     if (channel.stream_urls && channel.stream_urls.length > 0) {
       return channel.stream_urls[0];
@@ -73,7 +79,9 @@ export default function Player({ channel, isFavorite, onToggleFavorite, onClose 
     setError(null);
 
     if (isEffectiveHLS && Hls.isSupported()) {
-      const allStreamUrls = channel.stream_urls?.length ? channel.stream_urls : [effectiveStreamUrl];
+      const allStreamUrls = channel.stream_urls?.length
+        ? channel.stream_urls.map((u: string) => proxiedUrl(u))
+        : [effectiveStreamUrl];
       let currentUrlIndex = 0;
 
       const hls = new Hls({
@@ -95,10 +103,6 @@ export default function Player({ channel, isFavorite, onToggleFavorite, onClose 
         manifestLoadingMaxRetry: 4,
         levelLoadingTimeOut: 15000,
         levelLoadingMaxRetry: 4,
-        xhrSetup: (xhr: XMLHttpRequest, url: string) => {
-          // Some CDNs check Referer/Origin — send minimal headers to avoid blocks
-          xhr.withCredentials = false;
-        },
       });
       hlsRef.current = hls;
 
