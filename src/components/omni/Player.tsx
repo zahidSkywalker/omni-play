@@ -228,14 +228,13 @@ export default function Player({ channel, isFavorite, onToggleFavorite, onClose 
     }
   }, [isMinimized]);
 
-  // YouTube iframe fallback — only used when HLS extraction fails
+  // YouTube iframe — set src immediately, don't wait for HLS extraction
   const handleYouTubeReady = useCallback(() => {
     setLoading(false);
   }, []);
 
   useEffect(() => {
     if (!isYouTube || !youtubeUrl) return;
-    if (ytHlsUrl !== null) return;
     if (!iframeRef.current) return;
 
     const ytId = extractYouTubeId(youtubeUrl);
@@ -246,9 +245,9 @@ export default function Player({ channel, isFavorite, onToggleFavorite, onClose 
       return () => clearTimeout(timeout);
     }
 
-    const src = `https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&rel=0`;
+    const src = `https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&mute=1&rel=0`;
     iframeRef.current.src = src;
-  }, [isYouTube, youtubeUrl, ytHlsUrl]);
+  }, [isYouTube, youtubeUrl]);
 
   // Keyboard: Escape to close player
   useEffect(() => {
@@ -538,7 +537,7 @@ export default function Player({ channel, isFavorite, onToggleFavorite, onClose 
                 autoPlay
               />
               {loading && (
-                <div className="absolute inset-0 flex items-center justify-center omni-player-overlay-top">
+                <div className="absolute inset-0 flex items-center justify-center omni-player-overlay-top pointer-events-none">
                   <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -570,7 +569,7 @@ export default function Player({ channel, isFavorite, onToggleFavorite, onClose 
                 title={channel.name}
               />
               {loading && (
-                <div className="absolute inset-0 flex items-center justify-center omni-player-overlay-top">
+                <div className="absolute inset-0 flex items-center justify-center omni-player-overlay-top pointer-events-none">
                   <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
