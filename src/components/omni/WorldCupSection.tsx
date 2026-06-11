@@ -29,8 +29,9 @@ const HOST_COUNTRIES = [
 
 const TOURNAMENT_START = new Date('2026-06-11T00:00:00Z');
 
-/* FIFA 2026 World Cup — Group Stage Fixtures (Matchday 1-3)
-   Times in UTC. 16 groups of 3 teams each. Top 2 advance. */
+/* FIFA 2026 World Cup — Official Group Stage Fixtures (December 2025 Draw)
+   12 groups (A–L) of 4 teams. Top 2 from each group + 8 best 3rd-placed advance.
+   72 group stage matches total. Times in UTC. */
 interface Fixture {
   id: number;
   group: string;
@@ -44,74 +45,171 @@ interface Fixture {
 }
 
 const WORLD_CUP_FIXTURES: Fixture[] = [
-  /* ── Matchday 1: June 11 ── */
-  { id: 1,  group: 'A', home: 'Mexico', homeCode: 'mx', away: 'Morocco', awayCode: 'ma', kickoff: '2026-06-11T01:00:00Z', venue: 'Estadio Azteca', matchday: 1 },
-  { id: 2,  group: 'A', home: 'USA', homeCode: 'us', away: 'Ukraine', awayCode: 'ua', kickoff: '2026-06-11T22:00:00Z', venue: 'SoFi Stadium', matchday: 1 },
-  /* ── Matchday 1: June 12 ── */
-  { id: 3,  group: 'B', home: 'Argentina', homeCode: 'ar', away: 'Canada', awayCode: 'ca', kickoff: '2026-06-12T01:00:00Z', venue: 'Hard Rock Stadium', matchday: 1 },
-  { id: 4,  group: 'B', home: 'Chile', homeCode: 'cl', away: 'New Zealand', awayCode: 'nz', kickoff: '2026-06-12T19:00:00Z', venue: 'BBVA Stadium', matchday: 1 },
-  { id: 5,  group: 'C', home: 'Brazil', homeCode: 'br', away: 'Croatia', awayCode: 'hr', kickoff: '2026-06-12T22:00:00Z', venue: 'AT&T Stadium', matchday: 1 },
-  /* ── Matchday 1: June 13 ── */
-  { id: 6,  group: 'C', home: 'Cameroon', homeCode: 'cm', away: 'Australia', awayCode: 'au', kickoff: '2026-06-13T16:00:00Z', venue: 'NRG Stadium', matchday: 1 },
-  { id: 7,  group: 'D', home: 'Germany', homeCode: 'de', away: 'Japan', awayCode: 'jp', kickoff: '2026-06-13T19:00:00Z', venue: 'MetLife Stadium', matchday: 1 },
-  { id: 8,  group: 'D', home: 'Spain', homeCode: 'es', away: 'South Korea', awayCode: 'kr', kickoff: '2026-06-13T22:00:00Z', venue: "Levi's Stadium", matchday: 1 },
-  /* ── Matchday 1: June 14 ── */
-  { id: 9,  group: 'E', home: 'France', homeCode: 'fr', away: 'Peru', awayCode: 'pe', kickoff: '2026-06-14T01:00:00Z', venue: 'Lumen Field', matchday: 1 },
-  { id: 10, group: 'E', home: 'England', homeCode: 'gb', away: 'Iran', awayCode: 'ir', kickoff: '2026-06-14T19:00:00Z', venue: 'Gillette Stadium', matchday: 1 },
-  { id: 11, group: 'F', home: 'Portugal', homeCode: 'pt', away: 'Ghana', awayCode: 'gh', kickoff: '2026-06-14T22:00:00Z', venue: 'Lincoln Financial Field', matchday: 1 },
-  /* ── Matchday 1: June 15 ── */
-  { id: 12, group: 'F', home: 'Uruguay', homeCode: 'uy', away: 'South Africa', awayCode: 'za', kickoff: '2026-06-15T16:00:00Z', venue: 'BC Place', matchday: 1 },
-  { id: 13, group: 'G', home: 'Netherlands', homeCode: 'nl', away: 'Ecuador', awayCode: 'ec', kickoff: '2026-06-15T19:00:00Z', venue: 'Mercedes-Benz Stadium', matchday: 1 },
-  { id: 14, group: 'G', home: 'Colombia', homeCode: 'co', away: 'Saudi Arabia', awayCode: 'sa', kickoff: '2026-06-15T22:00:00Z', venue: 'BMO Field', matchday: 1 },
-  /* ── Matchday 1: June 16 ── */
-  { id: 15, group: 'H', home: 'Italy', homeCode: 'it', away: 'Tunisia', awayCode: 'tn', kickoff: '2026-06-16T19:00:00Z', venue: 'Estadio Akron', matchday: 1 },
-  { id: 16, group: 'H', home: 'Belgium', homeCode: 'be', away: 'Panama', awayCode: 'pa', kickoff: '2026-06-16T22:00:00Z', venue: 'SoFi Stadium', matchday: 1 },
-  /* ── Matchday 2: June 17-20 ── */
-  { id: 17, group: 'A', home: 'USA', homeCode: 'us', away: 'Mexico', awayCode: 'mx', kickoff: '2026-06-17T22:00:00Z', venue: 'MetLife Stadium', matchday: 2 },
-  { id: 18, group: 'A', home: 'Morocco', homeCode: 'ma', away: 'Ukraine', awayCode: 'ua', kickoff: '2026-06-18T01:00:00Z', venue: 'BBVA Stadium', matchday: 2 },
-  { id: 19, group: 'B', home: 'Argentina', homeCode: 'ar', away: 'Chile', awayCode: 'cl', kickoff: '2026-06-18T22:00:00Z', venue: 'NRG Stadium', matchday: 2 },
-  { id: 20, group: 'B', home: 'Canada', homeCode: 'ca', away: 'New Zealand', awayCode: 'nz', kickoff: '2026-06-19T01:00:00Z', venue: 'BC Place', matchday: 2 },
-  { id: 21, group: 'C', home: 'Brazil', homeCode: 'br', away: 'Cameroon', awayCode: 'cm', kickoff: '2026-06-19T22:00:00Z', venue: 'Hard Rock Stadium', matchday: 2 },
-  { id: 22, group: 'C', home: 'Croatia', homeCode: 'hr', away: 'Australia', awayCode: 'au', kickoff: '2026-06-20T01:00:00Z', venue: 'Lumen Field', matchday: 2 },
-  { id: 23, group: 'D', home: 'Germany', homeCode: 'de', away: 'Spain', awayCode: 'es', kickoff: '2026-06-20T19:00:00Z', venue: 'SoFi Stadium', matchday: 2 },
-  { id: 24, group: 'D', home: 'Japan', homeCode: 'jp', away: 'South Korea', awayCode: 'kr', kickoff: '2026-06-20T22:00:00Z', venue: "Levi's Stadium", matchday: 2 },
-  /* ── Matchday 2: June 21-22 ── */
-  { id: 25, group: 'E', home: 'France', homeCode: 'fr', away: 'England', awayCode: 'gb', kickoff: '2026-06-21T19:00:00Z', venue: 'AT&T Stadium', matchday: 2 },
-  { id: 26, group: 'E', home: 'Peru', homeCode: 'pe', away: 'Iran', awayCode: 'ir', kickoff: '2026-06-21T22:00:00Z', venue: 'Mercedes-Benz Stadium', matchday: 2 },
-  { id: 27, group: 'F', home: 'Portugal', homeCode: 'pt', away: 'Uruguay', awayCode: 'uy', kickoff: '2026-06-22T16:00:00Z', venue: 'Gillette Stadium', matchday: 2 },
-  { id: 28, group: 'F', home: 'Ghana', homeCode: 'gh', away: 'South Africa', awayCode: 'za', kickoff: '2026-06-22T19:00:00Z', venue: 'Lincoln Financial Field', matchday: 2 },
-  { id: 29, group: 'G', home: 'Netherlands', homeCode: 'nl', away: 'Colombia', awayCode: 'co', kickoff: '2026-06-22T22:00:00Z', venue: 'BMO Field', matchday: 2 },
-  /* ── Matchday 2: June 23 ── */
-  { id: 30, group: 'G', home: 'Ecuador', homeCode: 'ec', away: 'Saudi Arabia', awayCode: 'sa', kickoff: '2026-06-23T16:00:00Z', venue: 'Estadio Akron', matchday: 2 },
-  { id: 31, group: 'H', home: 'Italy', homeCode: 'it', away: 'Belgium', awayCode: 'be', kickoff: '2026-06-23T19:00:00Z', venue: 'MetLife Stadium', matchday: 2 },
-  { id: 32, group: 'H', home: 'Tunisia', homeCode: 'tn', away: 'Panama', awayCode: 'pa', kickoff: '2026-06-23T22:00:00Z', venue: 'NRG Stadium', matchday: 2 },
-  /* ── Matchday 3: June 24-27 ── */
-  { id: 33, group: 'A', home: 'Ukraine', homeCode: 'ua', away: 'Mexico', awayCode: 'mx', kickoff: '2026-06-24T19:00:00Z', venue: 'Estadio Azteca', matchday: 3 },
-  { id: 34, group: 'A', home: 'Morocco', homeCode: 'ma', away: 'USA', awayCode: 'us', kickoff: '2026-06-24T22:00:00Z', venue: 'SoFi Stadium', matchday: 3 },
-  { id: 35, group: 'B', home: 'New Zealand', homeCode: 'nz', away: 'Argentina', awayCode: 'ar', kickoff: '2026-06-25T16:00:00Z', venue: 'BBVA Stadium', matchday: 3 },
-  { id: 36, group: 'B', home: 'Chile', homeCode: 'cl', away: 'Canada', awayCode: 'ca', kickoff: '2026-06-25T19:00:00Z', venue: 'BC Place', matchday: 3 },
-  { id: 37, group: 'C', home: 'Australia', homeCode: 'au', away: 'Brazil', awayCode: 'br', kickoff: '2026-06-25T22:00:00Z', venue: 'AT&T Stadium', matchday: 3 },
-  { id: 38, group: 'C', home: 'Cameroon', homeCode: 'cm', away: 'Croatia', awayCode: 'hr', kickoff: '2026-06-26T16:00:00Z', venue: 'Hard Rock Stadium', matchday: 3 },
-  { id: 39, group: 'D', home: 'South Korea', homeCode: 'kr', away: 'Germany', awayCode: 'de', kickoff: '2026-06-26T19:00:00Z', venue: "Levi's Stadium", matchday: 3 },
-  { id: 40, group: 'D', home: 'Japan', homeCode: 'jp', away: 'Spain', awayCode: 'es', kickoff: '2026-06-26T22:00:00Z', venue: 'MetLife Stadium', matchday: 3 },
-  { id: 41, group: 'E', home: 'Iran', homeCode: 'ir', away: 'France', awayCode: 'fr', kickoff: '2026-06-27T16:00:00Z', venue: 'Lumen Field', matchday: 3 },
-  { id: 42, group: 'E', home: 'England', homeCode: 'gb', away: 'Peru', awayCode: 'pe', kickoff: '2026-06-27T19:00:00Z', venue: 'Mercedes-Benz Stadium', matchday: 3 },
-  { id: 43, group: 'F', home: 'South Africa', homeCode: 'za', away: 'Portugal', awayCode: 'pt', kickoff: '2026-06-27T19:00:00Z', venue: 'Gillette Stadium', matchday: 3 },
-  { id: 44, group: 'F', home: 'Uruguay', homeCode: 'uy', away: 'Ghana', awayCode: 'gh', kickoff: '2026-06-27T22:00:00Z', venue: 'Lincoln Financial Field', matchday: 3 },
-  { id: 45, group: 'G', home: 'Saudi Arabia', homeCode: 'sa', away: 'Netherlands', awayCode: 'nl', kickoff: '2026-06-27T16:00:00Z', venue: 'Estadio Akron', matchday: 3 },
-  { id: 46, group: 'G', home: 'Colombia', homeCode: 'co', away: 'Ecuador', awayCode: 'ec', kickoff: '2026-06-27T22:00:00Z', venue: 'BMO Field', matchday: 3 },
-  { id: 47, group: 'H', home: 'Panama', homeCode: 'pa', away: 'Italy', awayCode: 'it', kickoff: '2026-06-27T16:00:00Z', venue: 'NRG Stadium', matchday: 3 },
-  { id: 48, group: 'H', home: 'Belgium', homeCode: 'be', away: 'Tunisia', awayCode: 'tn', kickoff: '2026-06-27T22:00:00Z', venue: 'SoFi Stadium', matchday: 3 },
+  /* ════════════════════════════════════════════════════════════
+     MATCHDAY 1
+     ════════════════════════════════════════════════════════════ */
+
+  /* ── Group A: Mexico, South Africa, S. Korea, Czechia ── */
+  { id: 1,  group: 'A', home: 'Mexico', homeCode: 'mx', away: 'South Africa', awayCode: 'za', kickoff: '2026-06-11T19:00:00Z', venue: 'Estadio Azteca', matchday: 1 },
+  { id: 2,  group: 'A', home: 'S. Korea', homeCode: 'kr', away: 'Czechia', awayCode: 'cz', kickoff: '2026-06-11T22:00:00Z', venue: 'SoFi Stadium', matchday: 1 },
+
+  /* ── Group B: Canada, Morocco, Panama, Chile ── */
+  { id: 3,  group: 'B', home: 'Canada', homeCode: 'ca', away: 'Morocco', awayCode: 'ma', kickoff: '2026-06-12T01:00:00Z', venue: 'Hard Rock Stadium', matchday: 1 },
+  { id: 4,  group: 'B', home: 'Chile', homeCode: 'cl', away: 'Panama', awayCode: 'pa', kickoff: '2026-06-12T22:00:00Z', venue: 'Estadio BBVA', matchday: 1 },
+
+  /* ── Group C: USA, Paraguay, Australia, Turkey ── */
+  { id: 5,  group: 'C', home: 'USA', homeCode: 'us', away: 'Turkey', awayCode: 'tr', kickoff: '2026-06-12T22:00:00Z', venue: 'AT&T Stadium', matchday: 1 },
+  { id: 6,  group: 'C', home: 'Paraguay', homeCode: 'py', away: 'Australia', awayCode: 'au', kickoff: '2026-06-13T16:00:00Z', venue: 'NRG Stadium', matchday: 1 },
+
+  /* ── Group D: Argentina, Algeria, Austria, Jordan ── */
+  { id: 7,  group: 'D', home: 'Argentina', homeCode: 'ar', away: 'Jordan', awayCode: 'jo', kickoff: '2026-06-13T19:00:00Z', venue: 'MetLife Stadium', matchday: 1 },
+  { id: 8,  group: 'D', home: 'Austria', homeCode: 'at', away: 'Algeria', awayCode: 'dz', kickoff: '2026-06-13T22:00:00Z', venue: "Levi's Stadium", matchday: 1 },
+
+  /* ── Group E: Brazil, Colombia, Costa Rica, Ghana ── */
+  { id: 9,  group: 'E', home: 'Brazil', homeCode: 'br', away: 'Ghana', awayCode: 'gh', kickoff: '2026-06-14T01:00:00Z', venue: 'Lumen Field', matchday: 1 },
+  { id: 10, group: 'E', home: 'Colombia', homeCode: 'co', away: 'Costa Rica', awayCode: 'cr', kickoff: '2026-06-14T19:00:00Z', venue: 'Gillette Stadium', matchday: 1 },
+
+  /* ── Group F: France, Peru, Ecuador, New Zealand ── */
+  { id: 11, group: 'F', home: 'France', homeCode: 'fr', away: 'New Zealand', awayCode: 'nz', kickoff: '2026-06-14T22:00:00Z', venue: 'Lincoln Financial Field', matchday: 1 },
+  { id: 12, group: 'F', home: 'Ecuador', homeCode: 'ec', away: 'Peru', awayCode: 'pe', kickoff: '2026-06-15T16:00:00Z', venue: 'BC Place', matchday: 1 },
+
+  /* ── Group G: Spain, Germany, Japan, Saudi Arabia ── */
+  { id: 13, group: 'G', home: 'Spain', homeCode: 'es', away: 'Saudi Arabia', awayCode: 'sa', kickoff: '2026-06-15T19:00:00Z', venue: 'Mercedes-Benz Stadium', matchday: 1 },
+  { id: 14, group: 'G', home: 'Germany', homeCode: 'de', away: 'Japan', awayCode: 'jp', kickoff: '2026-06-15T22:00:00Z', venue: 'BMO Field', matchday: 1 },
+
+  /* ── Group H: England, Croatia, Senegal, Uzbekistan ── */
+  { id: 15, group: 'H', home: 'England', homeCode: 'gb', away: 'Uzbekistan', awayCode: 'uz', kickoff: '2026-06-16T19:00:00Z', venue: 'Estadio Akron', matchday: 1 },
+  { id: 16, group: 'H', home: 'Croatia', homeCode: 'hr', away: 'Senegal', awayCode: 'sn', kickoff: '2026-06-16T22:00:00Z', venue: 'SoFi Stadium', matchday: 1 },
+
+  /* ── Group I: Portugal, Uruguay, Egypt, Indonesia ── */
+  { id: 17, group: 'I', home: 'Portugal', homeCode: 'pt', away: 'Indonesia', awayCode: 'id', kickoff: '2026-06-17T22:00:00Z', venue: 'MetLife Stadium', matchday: 1 },
+  { id: 18, group: 'I', home: 'Uruguay', homeCode: 'uy', away: 'Egypt', awayCode: 'eg', kickoff: '2026-06-18T01:00:00Z', venue: 'Estadio BBVA', matchday: 1 },
+
+  /* ── Group J: Netherlands, Italy, Tunisia, Ivory Coast ── */
+  { id: 19, group: 'J', home: 'Netherlands', homeCode: 'nl', away: 'Ivory Coast', awayCode: 'ci', kickoff: '2026-06-18T22:00:00Z', venue: 'NRG Stadium', matchday: 1 },
+  { id: 20, group: 'J', home: 'Italy', homeCode: 'it', away: 'Tunisia', awayCode: 'tn', kickoff: '2026-06-19T01:00:00Z', venue: 'Hard Rock Stadium', matchday: 1 },
+
+  /* ── Group K: Belgium, Serbia, Cameroon, Cura\u00e7ao ── */
+  { id: 21, group: 'K', home: 'Belgium', homeCode: 'be', away: 'Cura\u00e7ao', awayCode: 'cw', kickoff: '2026-06-19T22:00:00Z', venue: 'AT&T Stadium', matchday: 1 },
+  { id: 22, group: 'K', home: 'Serbia', homeCode: 'rs', away: 'Cameroon', awayCode: 'cm', kickoff: '2026-06-20T01:00:00Z', venue: 'Lumen Field', matchday: 1 },
+
+  /* ── Group L: Switzerland, Denmark, Nigeria, Bolivia ── */
+  { id: 23, group: 'L', home: 'Switzerland', homeCode: 'ch', away: 'Bolivia', awayCode: 'bo', kickoff: '2026-06-20T19:00:00Z', venue: "Levi's Stadium", matchday: 1 },
+  { id: 24, group: 'L', home: 'Denmark', homeCode: 'dk', away: 'Nigeria', awayCode: 'ng', kickoff: '2026-06-20T22:00:00Z', venue: 'BC Place', matchday: 1 },
+
+  /* ════════════════════════════════════════════════════════════
+     MATCHDAY 2
+     ════════════════════════════════════════════════════════════ */
+
+  /* ── Group A ── */
+  { id: 25, group: 'A', home: 'Mexico', homeCode: 'mx', away: 'Czechia', awayCode: 'cz', kickoff: '2026-06-21T19:00:00Z', venue: 'Estadio Azteca', matchday: 2 },
+  { id: 26, group: 'A', home: 'South Africa', homeCode: 'za', away: 'S. Korea', awayCode: 'kr', kickoff: '2026-06-21T22:00:00Z', venue: 'SoFi Stadium', matchday: 2 },
+
+  /* ── Group B ── */
+  { id: 27, group: 'B', home: 'Canada', homeCode: 'ca', away: 'Chile', awayCode: 'cl', kickoff: '2026-06-22T19:00:00Z', venue: 'Estadio BBVA', matchday: 2 },
+  { id: 28, group: 'B', home: 'Morocco', homeCode: 'ma', away: 'Panama', awayCode: 'pa', kickoff: '2026-06-22T22:00:00Z', venue: 'Hard Rock Stadium', matchday: 2 },
+
+  /* ── Group C ── */
+  { id: 29, group: 'C', home: 'USA', homeCode: 'us', away: 'Paraguay', awayCode: 'py', kickoff: '2026-06-23T16:00:00Z', venue: 'NRG Stadium', matchday: 2 },
+  { id: 30, group: 'C', home: 'Australia', homeCode: 'au', away: 'Turkey', awayCode: 'tr', kickoff: '2026-06-23T19:00:00Z', venue: 'MetLife Stadium', matchday: 2 },
+
+  /* ── Group D ── */
+  { id: 31, group: 'D', home: 'Argentina', homeCode: 'ar', away: 'Algeria', awayCode: 'dz', kickoff: '2026-06-23T22:00:00Z', venue: 'AT&T Stadium', matchday: 2 },
+  { id: 32, group: 'D', home: 'Jordan', homeCode: 'jo', away: 'Austria', awayCode: 'at', kickoff: '2026-06-24T01:00:00Z', venue: "Levi's Stadium", matchday: 2 },
+
+  /* ── Group E ── */
+  { id: 33, group: 'E', home: 'Brazil', homeCode: 'br', away: 'Costa Rica', awayCode: 'cr', kickoff: '2026-06-24T19:00:00Z', venue: 'Lumen Field', matchday: 2 },
+  { id: 34, group: 'E', home: 'Ghana', homeCode: 'gh', away: 'Colombia', awayCode: 'co', kickoff: '2026-06-24T22:00:00Z', venue: 'Gillette Stadium', matchday: 2 },
+
+  /* ── Group F ── */
+  { id: 35, group: 'F', home: 'France', homeCode: 'fr', away: 'Peru', awayCode: 'pe', kickoff: '2026-06-25T16:00:00Z', venue: 'Lincoln Financial Field', matchday: 2 },
+  { id: 36, group: 'F', home: 'New Zealand', homeCode: 'nz', away: 'Ecuador', awayCode: 'ec', kickoff: '2026-06-25T19:00:00Z', venue: 'BC Place', matchday: 2 },
+
+  /* ── Group G ── */
+  { id: 37, group: 'G', home: 'Spain', homeCode: 'es', away: 'Japan', awayCode: 'jp', kickoff: '2026-06-25T22:00:00Z', venue: 'Mercedes-Benz Stadium', matchday: 2 },
+  { id: 38, group: 'G', home: 'Germany', homeCode: 'de', away: 'Saudi Arabia', awayCode: 'sa', kickoff: '2026-06-26T01:00:00Z', venue: 'BMO Field', matchday: 2 },
+
+  /* ── Group H ── */
+  { id: 39, group: 'H', home: 'England', homeCode: 'gb', away: 'Senegal', awayCode: 'sn', kickoff: '2026-06-26T19:00:00Z', venue: 'Estadio Akron', matchday: 2 },
+  { id: 40, group: 'H', home: 'Croatia', homeCode: 'hr', away: 'Uzbekistan', awayCode: 'uz', kickoff: '2026-06-26T22:00:00Z', venue: 'SoFi Stadium', matchday: 2 },
+
+  /* ── Group I ── */
+  { id: 41, group: 'I', home: 'Portugal', homeCode: 'pt', away: 'Egypt', awayCode: 'eg', kickoff: '2026-06-27T16:00:00Z', venue: 'MetLife Stadium', matchday: 2 },
+  { id: 42, group: 'I', home: 'Uruguay', homeCode: 'uy', away: 'Indonesia', awayCode: 'id', kickoff: '2026-06-27T19:00:00Z', venue: 'Estadio BBVA', matchday: 2 },
+
+  /* ── Group J ── */
+  { id: 43, group: 'J', home: 'Netherlands', homeCode: 'nl', away: 'Tunisia', awayCode: 'tn', kickoff: '2026-06-27T19:00:00Z', venue: 'NRG Stadium', matchday: 2 },
+  { id: 44, group: 'J', home: 'Italy', homeCode: 'it', away: 'Ivory Coast', awayCode: 'ci', kickoff: '2026-06-27T22:00:00Z', venue: 'Hard Rock Stadium', matchday: 2 },
+
+  /* ── Group K ── */
+  { id: 45, group: 'K', home: 'Belgium', homeCode: 'be', away: 'Cameroon', awayCode: 'cm', kickoff: '2026-06-28T16:00:00Z', venue: 'AT&T Stadium', matchday: 2 },
+  { id: 46, group: 'K', home: 'Serbia', homeCode: 'rs', away: 'Cura\u00e7ao', awayCode: 'cw', kickoff: '2026-06-28T19:00:00Z', venue: 'Lumen Field', matchday: 2 },
+
+  /* ── Group L ── */
+  { id: 47, group: 'L', home: 'Switzerland', homeCode: 'ch', away: 'Nigeria', awayCode: 'ng', kickoff: '2026-06-28T19:00:00Z', venue: "Levi's Stadium", matchday: 2 },
+  { id: 48, group: 'L', home: 'Denmark', homeCode: 'dk', away: 'Bolivia', awayCode: 'bo', kickoff: '2026-06-28T22:00:00Z', venue: 'BC Place', matchday: 2 },
+
+  /* ════════════════════════════════════════════════════════════
+     MATCHDAY 3
+     ════════════════════════════════════════════════════════════ */
+
+  /* ── Group A ── */
+  { id: 49, group: 'A', home: 'S. Korea', homeCode: 'kr', away: 'Mexico', awayCode: 'mx', kickoff: '2026-06-29T16:00:00Z', venue: 'Estadio Azteca', matchday: 3 },
+  { id: 50, group: 'A', home: 'Czechia', homeCode: 'cz', away: 'South Africa', awayCode: 'za', kickoff: '2026-06-29T19:00:00Z', venue: 'SoFi Stadium', matchday: 3 },
+
+  /* ── Group B ── */
+  { id: 51, group: 'B', home: 'Morocco', homeCode: 'ma', away: 'Chile', awayCode: 'cl', kickoff: '2026-06-29T19:00:00Z', venue: 'Estadio BBVA', matchday: 3 },
+  { id: 52, group: 'B', home: 'Panama', homeCode: 'pa', away: 'Canada', awayCode: 'ca', kickoff: '2026-06-29T22:00:00Z', venue: 'Hard Rock Stadium', matchday: 3 },
+
+  /* ── Group C ── */
+  { id: 53, group: 'C', home: 'Turkey', homeCode: 'tr', away: 'USA', awayCode: 'us', kickoff: '2026-06-30T16:00:00Z', venue: 'NRG Stadium', matchday: 3 },
+  { id: 54, group: 'C', home: 'Australia', homeCode: 'au', away: 'Paraguay', awayCode: 'py', kickoff: '2026-06-30T19:00:00Z', venue: 'MetLife Stadium', matchday: 3 },
+
+  /* ── Group D ── */
+  { id: 55, group: 'D', home: 'Algeria', homeCode: 'dz', away: 'Jordan', awayCode: 'jo', kickoff: '2026-06-30T22:00:00Z', venue: 'AT&T Stadium', matchday: 3 },
+  { id: 56, group: 'D', home: 'Austria', homeCode: 'at', away: 'Argentina', awayCode: 'ar', kickoff: '2026-07-01T01:00:00Z', venue: "Levi's Stadium", matchday: 3 },
+
+  /* ── Group E ── */
+  { id: 57, group: 'E', home: 'Costa Rica', homeCode: 'cr', away: 'Ghana', awayCode: 'gh', kickoff: '2026-07-01T19:00:00Z', venue: 'Lumen Field', matchday: 3 },
+  { id: 58, group: 'E', home: 'Colombia', homeCode: 'co', away: 'Brazil', awayCode: 'br', kickoff: '2026-07-01T22:00:00Z', venue: 'Gillette Stadium', matchday: 3 },
+
+  /* ── Group F ── */
+  { id: 59, group: 'F', home: 'Peru', homeCode: 'pe', away: 'New Zealand', awayCode: 'nz', kickoff: '2026-07-02T16:00:00Z', venue: 'Lincoln Financial Field', matchday: 3 },
+  { id: 60, group: 'F', home: 'Ecuador', homeCode: 'ec', away: 'France', awayCode: 'fr', kickoff: '2026-07-02T19:00:00Z', venue: 'BC Place', matchday: 3 },
+
+  /* ── Group G ── */
+  { id: 61, group: 'G', home: 'Japan', homeCode: 'jp', away: 'Spain', awayCode: 'es', kickoff: '2026-07-02T22:00:00Z', venue: 'Mercedes-Benz Stadium', matchday: 3 },
+  { id: 62, group: 'G', home: 'Saudi Arabia', homeCode: 'sa', away: 'Germany', awayCode: 'de', kickoff: '2026-07-03T01:00:00Z', venue: 'BMO Field', matchday: 3 },
+
+  /* ── Group H ── */
+  { id: 63, group: 'H', home: 'Senegal', homeCode: 'sn', away: 'England', awayCode: 'gb', kickoff: '2026-07-03T19:00:00Z', venue: 'Estadio Akron', matchday: 3 },
+  { id: 64, group: 'H', home: 'Uzbekistan', homeCode: 'uz', away: 'Croatia', awayCode: 'hr', kickoff: '2026-07-03T22:00:00Z', venue: 'SoFi Stadium', matchday: 3 },
+
+  /* ── Group I ── */
+  { id: 65, group: 'I', home: 'Egypt', homeCode: 'eg', away: 'Portugal', awayCode: 'pt', kickoff: '2026-07-04T16:00:00Z', venue: 'MetLife Stadium', matchday: 3 },
+  { id: 66, group: 'I', home: 'Indonesia', homeCode: 'id', away: 'Uruguay', awayCode: 'uy', kickoff: '2026-07-04T19:00:00Z', venue: 'Estadio BBVA', matchday: 3 },
+
+  /* ── Group J ── */
+  { id: 67, group: 'J', home: 'Tunisia', homeCode: 'tn', away: 'Netherlands', awayCode: 'nl', kickoff: '2026-07-04T19:00:00Z', venue: 'NRG Stadium', matchday: 3 },
+  { id: 68, group: 'J', home: 'Ivory Coast', homeCode: 'ci', away: 'Italy', awayCode: 'it', kickoff: '2026-07-04T22:00:00Z', venue: 'Hard Rock Stadium', matchday: 3 },
+
+  /* ── Group K ── */
+  { id: 69, group: 'K', home: 'Cameroon', homeCode: 'cm', away: 'Belgium', awayCode: 'be', kickoff: '2026-07-05T16:00:00Z', venue: 'AT&T Stadium', matchday: 3 },
+  { id: 70, group: 'K', home: 'Cura\u00e7ao', homeCode: 'cw', away: 'Serbia', awayCode: 'rs', kickoff: '2026-07-05T19:00:00Z', venue: 'Lumen Field', matchday: 3 },
+
+  /* ── Group L ── */
+  { id: 71, group: 'L', home: 'Nigeria', homeCode: 'ng', away: 'Switzerland', awayCode: 'ch', kickoff: '2026-07-05T19:00:00Z', venue: "Levi's Stadium", matchday: 3 },
+  { id: 72, group: 'L', home: 'Bolivia', homeCode: 'bo', away: 'Denmark', awayCode: 'dk', kickoff: '2026-07-05T22:00:00Z', venue: 'BC Place', matchday: 3 },
 ];
 
 const SCHEDULE_PHASES = [
-  { phase: 'Group Stage', dates: 'Jun 11 \u2013 Jun 27', matches: 80, desc: '16 groups of 3 teams. Top 2 advance to knockout.' },
-  { phase: 'Round of 32', dates: 'Jun 30 \u2013 Jul 3', matches: 16, desc: 'Single-elimination knockout begins.' },
-  { phase: 'Round of 16', dates: 'Jul 4 \u2013 Jul 7', matches: 8, desc: 'Win or go home \u2014 no second chances.' },
-  { phase: 'Quarter-Finals', dates: 'Jul 10 \u2013 Jul 12', matches: 4, desc: 'The final eight battle for a semifinal spot.' },
-  { phase: 'Semi-Finals', dates: 'Jul 14 \u2013 Jul 15', matches: 2, desc: 'Two matches that define the tournament.' },
-  { phase: 'Third-Place', date: 'Jul 18', matches: 1, desc: 'Bronze medal match in Atlanta.' },
-  { phase: 'Final', date: 'Jul 19', matches: 1, desc: 'The biggest match in football \u2014 MetLife Stadium, New Jersey.' },
+  { phase: 'Group Stage', dates: 'Jun 11 \u2013 Jul 5', matches: 72, desc: '12 groups of 4 teams. Top 2 + 8 best 3rd-placed advance to knockout.' },
+  { phase: 'Round of 32', dates: 'Jul 8 \u2013 Jul 11', matches: 16, desc: 'Single-elimination knockout begins.' },
+  { phase: 'Round of 16', dates: 'Jul 12 \u2013 Jul 15', matches: 8, desc: 'Win or go home \u2014 no second chances.' },
+  { phase: 'Quarter-Finals', dates: 'Jul 17 \u2013 Jul 19', matches: 4, desc: 'The final eight battle for a semifinal spot.' },
+  { phase: 'Semi-Finals', dates: 'Jul 21 \u2013 Jul 22', matches: 2, desc: 'Two matches that define the tournament.' },
+  { phase: 'Third-Place', date: 'Jul 24', matches: 1, desc: 'Bronze medal match in Miami.' },
+  { phase: 'Final', date: 'Jul 25', matches: 1, desc: 'The biggest match in football \u2014 MetLife Stadium, New Jersey.' },
 ];
 
 const TOP_PLAYERS = [
@@ -136,12 +234,11 @@ const TOP_TEAMS = [
 
 const CONFEDERATIONS = [
   { name: 'UEFA (Europe)', teams: 16, color: '#3498db' },
-  { name: 'CAF (Africa)', teams: 9, color: '#e67e22' },
+  { name: 'CAF (Africa)', teams: 10, color: '#e67e22' },
   { name: 'CONMEBOL (S. America)', teams: 6, color: '#27ae60' },
   { name: 'CONCACAF (N. America)', teams: 6, color: '#e74c3c' },
-  { name: 'AFC (Asia)', teams: 8, color: '#f1c40f' },
+  { name: 'AFC (Asia)', teams: 9, color: '#f1c40f' },
   { name: 'OFC (Oceania)', teams: 1, color: '#9b59b6' },
-  { name: 'Hosts', teams: 3, color: '#1abc9c' },
 ];
 
 /* #2: FOOTBALL CHANNELS — verified real broadcasters (famelack API + YouTube live).
@@ -577,7 +674,7 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
                 <div className="flex flex-col items-center px-6 py-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
                   <Trophy className="w-6 h-6 mb-2" style={{ color: '#E8A317' }} />
                   <span className="text-xs sm:text-sm font-semibold text-white">Group Stage Complete</span>
-                  <span className="text-[10px] text-white/40 mt-1">Knockout rounds begin June 30</span>
+                  <span className="text-[10px] text-white/40 mt-1">Knockout rounds begin July 8</span>
                 </div>
               ) : activeMatches.length === 0 ? (
                 <div className="flex flex-col items-center px-6 py-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
@@ -648,7 +745,7 @@ export default function WorldCupSection({ mode, onChannelSelect, onClose }: Worl
               {[
                 { icon: <Users className="w-3 h-3 sm:w-3.5 sm:h-3.5" />, text: '48 Teams' },
                 { icon: <Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5" />, text: '104 Matches' },
-                { icon: <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5" />, text: '16 Venues' },
+                { icon: <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5" />, text: '12 Groups' },
               ].map((stat, i) => (
                 <div key={i} className="flex items-center gap-1 sm:gap-1.5 text-white/50">
                   {stat.icon}
