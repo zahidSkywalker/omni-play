@@ -250,7 +250,8 @@ const FOOTBALL_COMPS = [
     gradient: 'linear-gradient(135deg, #0d3320 0%, #1a6b3c 100%)', accent: '#1a6b3c',
     channels: [
       /* ── Bangladesh 🇧🇩 ── */
-      { name: 'T Sports', country: 'bd', terms: ['t sport'] },
+      { name: 'Somoy TV', country: 'bd', terms: ['somoy'] },
+      { name: 'BTV', country: 'bd', terms: ['btv'] },
       { name: 'RTA Sport', country: 'af', terms: ['rta sport'] },
       /* ── India 🇮🇳 ── */
       { name: 'DD Sports', country: 'in', terms: ['dd sport'] },
@@ -316,7 +317,8 @@ const FOOTBALL_COMPS = [
     gradient: 'linear-gradient(135deg, #38003C 0%, #6B2D8E 100%)', accent: '#6B2D8E',
     channels: [
       /* ── Bangladesh 🇧🇩 ── */
-      { name: 'T Sports', country: 'bd', terms: ['t sport'] },
+      { name: 'Somoy TV', country: 'bd', terms: ['somoy'] },
+      { name: 'BTV', country: 'bd', terms: ['btv'] },
       /* ── Middle East ── */
       { name: 'KTV Sport', country: 'kw', terms: ['ktv sport'] },
       { name: 'KTV Sport Plus', country: 'kw', terms: ['ktv sport plus'] },
@@ -344,7 +346,8 @@ const FOOTBALL_COMPS = [
     gradient: 'linear-gradient(135deg, #0A1628 0%, #14274E 100%)', accent: '#14274E',
     channels: [
       /* ── Bangladesh 🇧🇩 ── */
-      { name: 'T Sports', country: 'bd', terms: ['t sport'] },
+      { name: 'Somoy TV', country: 'bd', terms: ['somoy'] },
+      { name: 'BTV', country: 'bd', terms: ['btv'] },
       /* ── Middle East ── */
       { name: 'KTV Sport', country: 'kw', terms: ['ktv sport'] },
       { name: 'Bahrain Sports 1', country: 'bh', terms: ['bahrain sport'] },
